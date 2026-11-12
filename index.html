@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Aristo Exam & Grading Ledger</title>
+    <meta name="description" content="School examination management, marks conversion, automatic GPA grading, markwise and gradewise ledgers, Excel import/export, and printable PDF grade sheets." />
+    <meta property="og:title" content="Aristo Exam & Grading Ledger" />
+    <meta property="og:description" content="School examination management, marks conversion, automatic GPA grading, markwise and gradewise ledgers, Excel import/export, and printable PDF grade sheets." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#be185d" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Aristo Exam" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      // Gracefully prevent expected HMR WebSocket close events in iframe/Cloud Run environment from bubbling as errors
+      window.addEventListener('error', function (e) {
+        if (
+          e.message &&
+          (e.message.includes('WebSocket') || e.message.includes('@vite/client'))
+        ) {
+          e.preventDefault();
+        }
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        if (
+          e.reason &&
+          e.reason.message &&
+          (e.reason.message.includes('WebSocket') ||
+            e.reason.message.includes('@vite/client'))
+        ) {
+          e.preventDefault();
+        }
+      });
+    </script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

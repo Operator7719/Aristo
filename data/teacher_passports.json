@@ -1,0 +1,17 @@
+[
+  {
+    "id": "pp-2082-001",
+    "passportNumber": "ARISTO-PP-2082-001",
+    "passportTitle": "Class Teacher Passport",
+    "username": "ram.joshi",
+    "passcode": "Aristo@001",
+    "assignedTeacherId": "tch-1",
+    "issuedDate": "2082-01-10",
+    "expiryDate": "2083-12-30",
+    "status": "active",
+    "notes": "Grade 9A Class Teacher & Mathematics access credential",
+    "createdBy": "Admin",
+    "createdDate": "2082-01-10",
+    "assignedDate": "2082-01-10"
+  }
+]

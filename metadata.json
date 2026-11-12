@@ -1,0 +1,6 @@
+{
+  "name": "Aristo Exam & Grading Ledger",
+  "description": "School examination management, marks conversion, automatic GPA grading, markwise and gradewise ledgers, Excel import/export, and printable PDF grade sheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

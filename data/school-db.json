@@ -1,0 +1,2428 @@
+{
+  "settings": {
+    "schoolName": "ARISTO ENGLISH BOARDING SCHOOL",
+    "address": "Dhangadhi-08, Campus Road, Kailali",
+    "estd": "2049 BS",
+    "iemisCode": "710100021",
+    "academicYear": "2083 B.S",
+    "dateOfIssue": "2083-08-06",
+    "examIssueDates": {
+      "first": "2083-04-20",
+      "second": "2083-08-06",
+      "third": "2083-10-10",
+      "annual": "2083-12-02"
+    },
+    "status": "active",
+    "requirePassBothComponents": true,
+    "signatories": {
+      "classTeacher": "Class Teacher",
+      "coordinator": "Co-ordinator",
+      "principal": "Principal"
+    },
+    "gradingRules": [
+      {
+        "id": "gr-ap",
+        "minPercent": 90,
+        "maxPercent": 100,
+        "grade": "A+",
+        "description": "Outstanding",
+        "gradePoint": 4
+      },
+      {
+        "id": "gr-a",
+        "minPercent": 80,
+        "maxPercent": 90,
+        "grade": "A",
+        "description": "Excellent",
+        "gradePoint": 3.6
+      },
+      {
+        "id": "gr-bp",
+        "minPercent": 70,
+        "maxPercent": 80,
+        "grade": "B+",
+        "description": "Very Good",
+        "gradePoint": 3.2
+      },
+      {
+        "id": "gr-b",
+        "minPercent": 60,
+        "maxPercent": 70,
+        "grade": "B",
+        "description": "Good",
+        "gradePoint": 2.8
+      },
+      {
+        "id": "gr-cp",
+        "minPercent": 50,
+        "maxPercent": 60,
+        "grade": "C+",
+        "description": "Satisfactory",
+        "gradePoint": 2.4
+      },
+      {
+        "id": "gr-c",
+        "minPercent": 40,
+        "maxPercent": 50,
+        "grade": "C",
+        "description": "Acceptable",
+        "gradePoint": 2
+      },
+      {
+        "id": "gr-d",
+        "minPercent": 35,
+        "maxPercent": 40,
+        "grade": "D",
+        "description": "Basic",
+        "gradePoint": 1.6
+      },
+      {
+        "id": "gr-ng",
+        "minPercent": 0,
+        "maxPercent": 35,
+        "grade": "NG",
+        "description": "Not Graded",
+        "gradePoint": 0
+      }
+    ],
+    "phone": "091-521456",
+    "email": "info@aristohighschool.edu.np",
+    "examWorkingDays": {
+      "first": 68,
+      "second": 72,
+      "third": 80,
+      "annual": 210
+    }
+  },
+  "classes": [
+    {
+      "id": "cls-nursery",
+      "name": "Nursery",
+      "gradeLevel": -2,
+      "conversionTier": "none",
+      "sections": [
+        {
+          "id": "sec-nur-a",
+          "name": "A",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 1
+    },
+    {
+      "id": "cls-lkg",
+      "name": "LKG",
+      "gradeLevel": -1,
+      "conversionTier": "none",
+      "sections": [
+        {
+          "id": "sec-lkg-a",
+          "name": "A",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 2
+    },
+    {
+      "id": "cls-ukg",
+      "name": "UKG",
+      "gradeLevel": 0,
+      "conversionTier": "none",
+      "sections": [
+        {
+          "id": "sec-ukg-a",
+          "name": "A",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 3
+    },
+    {
+      "id": "cls-1",
+      "name": "Grade 1",
+      "gradeLevel": 1,
+      "conversionTier": "none",
+      "sections": [
+        {
+          "id": "sec-1-a",
+          "name": "A",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 4
+    },
+    {
+      "id": "cls-2",
+      "name": "Grade 2",
+      "gradeLevel": 2,
+      "conversionTier": "none",
+      "sections": [
+        {
+          "id": "sec-2-a",
+          "name": "A",
+          "status": "active"
+        },
+        {
+          "id": "sec-2-b",
+          "name": "B",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 5
+    },
+    {
+      "id": "cls-3",
+      "name": "Grade 3",
+      "gradeLevel": 3,
+      "conversionTier": "none",
+      "sections": [
+        {
+          "id": "sec-3-a",
+          "name": "A",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 6
+    },
+    {
+      "id": "cls-4",
+      "name": "Grade 4",
+      "gradeLevel": 4,
+      "conversionTier": "grade_4_8",
+      "sections": [
+        {
+          "id": "sec-4-a",
+          "name": "A",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 7
+    },
+    {
+      "id": "cls-5",
+      "name": "Grade 5",
+      "gradeLevel": 5,
+      "conversionTier": "grade_4_8",
+      "sections": [
+        {
+          "id": "sec-5-a",
+          "name": "A",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 8
+    },
+    {
+      "id": "cls-6",
+      "name": "Grade 6",
+      "gradeLevel": 6,
+      "conversionTier": "grade_4_8",
+      "sections": [
+        {
+          "id": "sec-6-a",
+          "name": "A",
+          "status": "active"
+        },
+        {
+          "id": "sec-6-b",
+          "name": "B",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 9
+    },
+    {
+      "id": "cls-7",
+      "name": "Grade 7",
+      "gradeLevel": 7,
+      "conversionTier": "grade_4_8",
+      "sections": [
+        {
+          "id": "sec-7-a",
+          "name": "A",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 10
+    },
+    {
+      "id": "cls-8",
+      "name": "Grade 8",
+      "gradeLevel": 8,
+      "conversionTier": "grade_4_8",
+      "sections": [
+        {
+          "id": "sec-8-a",
+          "name": "A",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 11
+    },
+    {
+      "id": "cls-9",
+      "name": "Grade 9",
+      "gradeLevel": 9,
+      "conversionTier": "grade_9_12",
+      "sections": [
+        {
+          "id": "sec-9-a",
+          "name": "A",
+          "status": "active"
+        },
+        {
+          "id": "sec-9-b",
+          "name": "B",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 12
+    },
+    {
+      "id": "cls-10",
+      "name": "Grade 10",
+      "gradeLevel": 10,
+      "conversionTier": "grade_9_12",
+      "sections": [
+        {
+          "id": "sec-10-a",
+          "name": "A",
+          "status": "active"
+        },
+        {
+          "id": "sec-10-b",
+          "name": "B",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 13
+    },
+    {
+      "id": "cls-11",
+      "name": "Grade 11",
+      "gradeLevel": 11,
+      "conversionTier": "grade_9_12",
+      "sections": [
+        {
+          "id": "sec-11-a",
+          "name": "A",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 14
+    },
+    {
+      "id": "cls-12",
+      "name": "Grade 12",
+      "gradeLevel": 12,
+      "conversionTier": "grade_9_12",
+      "sections": [
+        {
+          "id": "sec-12-a",
+          "name": "A",
+          "status": "active"
+        }
+      ],
+      "status": "active",
+      "order": 15
+    }
+  ],
+  "subjects": [
+    {
+      "id": "sub-2-nep",
+      "classId": "cls-2",
+      "code": "NEP-2",
+      "name": "NEPALI",
+      "category": "compulsory",
+      "fullMarksTheory": 100,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 35,
+      "passMarksPractical": 0,
+      "creditHourTheory": 4,
+      "creditHourPractical": 0,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 1
+    },
+    {
+      "id": "sub-2-eng",
+      "classId": "cls-2",
+      "code": "ENG-2",
+      "name": "ENGLISH",
+      "category": "compulsory",
+      "fullMarksTheory": 100,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 35,
+      "passMarksPractical": 0,
+      "creditHourTheory": 4,
+      "creditHourPractical": 0,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 2
+    },
+    {
+      "id": "sub-2-math",
+      "classId": "cls-2",
+      "code": "MTH-2",
+      "name": "MATHEMATICS",
+      "category": "compulsory",
+      "fullMarksTheory": 100,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 35,
+      "passMarksPractical": 0,
+      "creditHourTheory": 4,
+      "creditHourPractical": 0,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 3
+    },
+    {
+      "id": "sub-2-sero",
+      "classId": "cls-2",
+      "code": "SER-2",
+      "name": "HAMRO SEROFERO",
+      "category": "compulsory",
+      "fullMarksTheory": 80,
+      "fullMarksPractical": 20,
+      "passMarksTheory": 28,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3,
+      "creditHourPractical": 1,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 4
+    },
+    {
+      "id": "sub-6-nep",
+      "classId": "cls-6",
+      "code": "NEP-6",
+      "name": "NEPALI",
+      "category": "compulsory",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 40,
+      "passMarksTheory": 18,
+      "passMarksPractical": 14,
+      "creditHourTheory": 2.5,
+      "creditHourPractical": 2.5,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 1
+    },
+    {
+      "id": "sub-6-eng",
+      "classId": "cls-6",
+      "code": "ENG-6",
+      "name": "ENGLISH",
+      "category": "compulsory",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 40,
+      "passMarksTheory": 18,
+      "passMarksPractical": 14,
+      "creditHourTheory": 2.5,
+      "creditHourPractical": 2.5,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 2
+    },
+    {
+      "id": "sub-6-math",
+      "classId": "cls-6",
+      "code": "MTH-6",
+      "name": "MATHEMATICS",
+      "category": "compulsory",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 40,
+      "passMarksTheory": 18,
+      "passMarksPractical": 14,
+      "creditHourTheory": 2.5,
+      "creditHourPractical": 2.5,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 3
+    },
+    {
+      "id": "sub-6-sci",
+      "classId": "cls-6",
+      "code": "SCI-6",
+      "name": "SCIENCE AND TECHNOLOGY",
+      "category": "compulsory",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 40,
+      "passMarksTheory": 18,
+      "passMarksPractical": 14,
+      "creditHourTheory": 2.5,
+      "creditHourPractical": 2.5,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 4
+    },
+    {
+      "id": "sub-6-soc",
+      "classId": "cls-6",
+      "code": "SOC-6",
+      "name": "SOCIAL STUDIES",
+      "category": "compulsory",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 40,
+      "passMarksTheory": 18,
+      "passMarksPractical": 14,
+      "creditHourTheory": 2.5,
+      "creditHourPractical": 2.5,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 5
+    },
+    {
+      "id": "sub-6-comp",
+      "classId": "cls-6",
+      "code": "CMP-6",
+      "name": "COMPUTER",
+      "category": "compulsory",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 40,
+      "passMarksTheory": 18,
+      "passMarksPractical": 14,
+      "creditHourTheory": 2,
+      "creditHourPractical": 2,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 6
+    },
+    {
+      "id": "sub-9-nep",
+      "classId": "cls-9",
+      "code": "NEP-9",
+      "name": "COMP. NEPALI",
+      "category": "compulsory",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 2.25,
+      "creditHourPractical": 0.75,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 1
+    },
+    {
+      "id": "sub-9-eng",
+      "classId": "cls-9",
+      "code": "ENG-9",
+      "name": "COMP. ENGLISH",
+      "category": "compulsory",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3,
+      "creditHourPractical": 1,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 2
+    },
+    {
+      "id": "sub-9-math",
+      "classId": "cls-9",
+      "code": "MTH-9",
+      "name": "COMP. MATHEMATICS",
+      "category": "compulsory",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3.75,
+      "creditHourPractical": 1.25,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 3
+    },
+    {
+      "id": "sub-9-sci",
+      "classId": "cls-9",
+      "code": "SCI-9",
+      "name": "COMP. SCIENCE AND TECHNOLOGY",
+      "category": "compulsory",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3.75,
+      "creditHourPractical": 1.25,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 4
+    },
+    {
+      "id": "sub-9-soc",
+      "classId": "cls-9",
+      "code": "SOC-9",
+      "name": "COMP. SOCIAL STUDIES",
+      "category": "compulsory",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3.75,
+      "creditHourPractical": 1.25,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 5
+    },
+    {
+      "id": "sub-9-opt1-eco",
+      "classId": "cls-9",
+      "code": "OPT1-ECO-9",
+      "name": "OPT.I ECONOMICS",
+      "category": "opt_1",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3.75,
+      "creditHourPractical": 1.25,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 6
+    },
+    {
+      "id": "sub-9-opt1-amth",
+      "classId": "cls-9",
+      "code": "OPT1-AMTH-9",
+      "name": "OPT.I ADDITIONAL MATHEMATICS",
+      "category": "opt_1",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3.75,
+      "creditHourPractical": 1.25,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 6
+    },
+    {
+      "id": "sub-9-opt1-acc",
+      "classId": "cls-9",
+      "code": "OPT1-ACC-9",
+      "name": "OPT.I ACCOUNTING",
+      "category": "opt_1",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3.75,
+      "creditHourPractical": 1.25,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 6
+    },
+    {
+      "id": "sub-9-opt2-cs",
+      "classId": "cls-9",
+      "code": "OPT2-CS-9",
+      "name": "OPT.II COMPUTER SCIENCE",
+      "category": "opt_2",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 2,
+      "creditHourPractical": 2,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 7
+    },
+    {
+      "id": "sub-10-nep",
+      "classId": "cls-10",
+      "code": "NEP-10",
+      "name": "COMP. NEPALI",
+      "category": "compulsory",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 2.25,
+      "creditHourPractical": 0.75,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 1
+    },
+    {
+      "id": "sub-10-eng",
+      "classId": "cls-10",
+      "code": "ENG-10",
+      "name": "COMP. ENGLISH",
+      "category": "compulsory",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3,
+      "creditHourPractical": 1,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 2
+    },
+    {
+      "id": "sub-10-math",
+      "classId": "cls-10",
+      "code": "MTH-10",
+      "name": "COMP. MATHEMATICS",
+      "category": "compulsory",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3.75,
+      "creditHourPractical": 1.25,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 3
+    },
+    {
+      "id": "sub-10-sci",
+      "classId": "cls-10",
+      "code": "SCI-10",
+      "name": "COMP. SCIENCE AND TECHNOLOGY",
+      "category": "compulsory",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3.75,
+      "creditHourPractical": 1.25,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 4
+    },
+    {
+      "id": "sub-10-soc",
+      "classId": "cls-10",
+      "code": "SOC-10",
+      "name": "COMP. SOCIAL STUDIES",
+      "category": "compulsory",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3.75,
+      "creditHourPractical": 1.25,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 5
+    },
+    {
+      "id": "sub-10-opt1-eco",
+      "classId": "cls-10",
+      "code": "OPT1-ECO-10",
+      "name": "OPT.I ECONOMICS",
+      "category": "opt_1",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3.75,
+      "creditHourPractical": 1.25,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 6
+    },
+    {
+      "id": "sub-10-opt1-amth",
+      "classId": "cls-10",
+      "code": "OPT1-AMTH-10",
+      "name": "OPT.I ADDITIONAL MATHEMATICS",
+      "category": "opt_1",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 3.75,
+      "creditHourPractical": 1.25,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 6
+    },
+    {
+      "id": "sub-10-opt2-cs",
+      "classId": "cls-10",
+      "code": "OPT2-CS-10",
+      "name": "OPT.II COMPUTER SCIENCE",
+      "category": "opt_2",
+      "fullMarksTheory": 75,
+      "fullMarksPractical": 19,
+      "passMarksTheory": 27,
+      "passMarksPractical": 7,
+      "creditHourTheory": 2,
+      "creditHourPractical": 2,
+      "conversionRule": "inherit",
+      "status": "active",
+      "displayOrder": 7
+    },
+    {
+      "id": "sub-1794299556085",
+      "classId": "cls-nursery",
+      "code": "SUB-1",
+      "name": "NEPALI",
+      "category": "compulsory",
+      "fullMarksTheory": 100,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 35,
+      "passMarksPractical": 0,
+      "creditHourTheory": 5,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 1
+    },
+    {
+      "id": "sub-1794299623132",
+      "classId": "cls-nursery",
+      "code": "SUB-2",
+      "name": "NEPALI ORAL",
+      "category": "compulsory",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 35,
+      "passMarksPractical": 0,
+      "creditHourTheory": 4,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 2
+    },
+    {
+      "id": "sub-1794299660356",
+      "classId": "cls-nursery",
+      "code": "SUB-3",
+      "name": "ENGLISH",
+      "category": "compulsory",
+      "fullMarksTheory": 100,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 35,
+      "passMarksPractical": 0,
+      "creditHourTheory": 5,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 3
+    },
+    {
+      "id": "sub-1794299712988",
+      "classId": "cls-nursery",
+      "code": "SUB-4",
+      "name": "ENGLISH ORAL",
+      "category": "compulsory",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 35,
+      "passMarksPractical": 0,
+      "creditHourTheory": 4,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 4
+    },
+    {
+      "id": "sub-1794299735916",
+      "classId": "cls-nursery",
+      "code": "SUB-5",
+      "name": "MATHEMATICS",
+      "category": "compulsory",
+      "fullMarksTheory": 100,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 35,
+      "passMarksPractical": 0,
+      "creditHourTheory": 5,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 5
+    },
+    {
+      "id": "sub-cls-nursery-draw",
+      "classId": "cls-nursery",
+      "code": "DRW-NUR",
+      "name": "DRAWING",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 20
+    },
+    {
+      "id": "sub-cls-nursery-rhy",
+      "classId": "cls-nursery",
+      "code": "RHY-NUR",
+      "name": "RHYMES",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 21
+    },
+    {
+      "id": "sub-cls-nursery-crft",
+      "classId": "cls-nursery",
+      "code": "CRF-NUR",
+      "name": "CRAFT",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 22
+    },
+    {
+      "id": "sub-cls-lkg-draw",
+      "classId": "cls-lkg",
+      "code": "DRW-LKG",
+      "name": "DRAWING",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 20
+    },
+    {
+      "id": "sub-cls-lkg-rhy",
+      "classId": "cls-lkg",
+      "code": "RHY-LKG",
+      "name": "RHYMES",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 21
+    },
+    {
+      "id": "sub-cls-lkg-crft",
+      "classId": "cls-lkg",
+      "code": "CRF-LKG",
+      "name": "CRAFT",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 22
+    },
+    {
+      "id": "sub-cls-ukg-draw",
+      "classId": "cls-ukg",
+      "code": "DRW-UKG",
+      "name": "DRAWING",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 20
+    },
+    {
+      "id": "sub-cls-ukg-rhy",
+      "classId": "cls-ukg",
+      "code": "RHY-UKG",
+      "name": "RHYMES",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 21
+    },
+    {
+      "id": "sub-cls-ukg-crft",
+      "classId": "cls-ukg",
+      "code": "CRF-UKG",
+      "name": "CRAFT",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 22
+    },
+    {
+      "id": "sub-cls-1-draw",
+      "classId": "cls-1",
+      "code": "DRW-1",
+      "name": "DRAWING",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 20
+    },
+    {
+      "id": "sub-cls-1-rhy",
+      "classId": "cls-1",
+      "code": "RHY-1",
+      "name": "RHYMES",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 21
+    },
+    {
+      "id": "sub-cls-1-crft",
+      "classId": "cls-1",
+      "code": "CRF-1",
+      "name": "CRAFT",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 22
+    },
+    {
+      "id": "sub-cls-2-draw",
+      "classId": "cls-2",
+      "code": "DRW-2",
+      "name": "DRAWING",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 20
+    },
+    {
+      "id": "sub-cls-2-rhy",
+      "classId": "cls-2",
+      "code": "RHY-2",
+      "name": "RHYMES",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 21
+    },
+    {
+      "id": "sub-cls-2-crft",
+      "classId": "cls-2",
+      "code": "CRF-2",
+      "name": "CRAFT",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 22
+    },
+    {
+      "id": "sub-cls-3-draw",
+      "classId": "cls-3",
+      "code": "DRW-3",
+      "name": "DRAWING",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 20
+    },
+    {
+      "id": "sub-cls-3-rhy",
+      "classId": "cls-3",
+      "code": "RHY-3",
+      "name": "RHYMES",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 21
+    },
+    {
+      "id": "sub-cls-3-crft",
+      "classId": "cls-3",
+      "code": "CRF-3",
+      "name": "CRAFT",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 22
+    },
+    {
+      "id": "sub-cls-4-gram",
+      "classId": "cls-4",
+      "code": "GRM-4",
+      "name": "GRAMMAR",
+      "category": "compulsory",
+      "gradingMode": "academic",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 18,
+      "passMarksPractical": 0,
+      "creditHourTheory": 2,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 7
+    },
+    {
+      "id": "sub-cls-4-gk",
+      "classId": "cls-4",
+      "code": "GK-4",
+      "name": "GENERAL KNOWLEDGE (GK)",
+      "category": "compulsory",
+      "gradingMode": "academic",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 18,
+      "passMarksPractical": 0,
+      "creditHourTheory": 2,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 8
+    },
+    {
+      "id": "sub-cls-4-draw",
+      "classId": "cls-4",
+      "code": "DRW-4",
+      "name": "DRAWING",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 20
+    },
+    {
+      "id": "sub-cls-5-gram",
+      "classId": "cls-5",
+      "code": "GRM-5",
+      "name": "GRAMMAR",
+      "category": "compulsory",
+      "gradingMode": "academic",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 18,
+      "passMarksPractical": 0,
+      "creditHourTheory": 2,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 7
+    },
+    {
+      "id": "sub-cls-5-gk",
+      "classId": "cls-5",
+      "code": "GK-5",
+      "name": "GENERAL KNOWLEDGE (GK)",
+      "category": "compulsory",
+      "gradingMode": "academic",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 18,
+      "passMarksPractical": 0,
+      "creditHourTheory": 2,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 8
+    },
+    {
+      "id": "sub-cls-5-draw",
+      "classId": "cls-5",
+      "code": "DRW-5",
+      "name": "DRAWING",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 20
+    },
+    {
+      "id": "sub-cls-6-gram",
+      "classId": "cls-6",
+      "code": "GRM-6",
+      "name": "GRAMMAR",
+      "category": "compulsory",
+      "gradingMode": "academic",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 18,
+      "passMarksPractical": 0,
+      "creditHourTheory": 2,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 7
+    },
+    {
+      "id": "sub-cls-6-gk",
+      "classId": "cls-6",
+      "code": "GK-6",
+      "name": "GENERAL KNOWLEDGE (GK)",
+      "category": "compulsory",
+      "gradingMode": "academic",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 18,
+      "passMarksPractical": 0,
+      "creditHourTheory": 2,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 8
+    },
+    {
+      "id": "sub-cls-6-draw",
+      "classId": "cls-6",
+      "code": "DRW-6",
+      "name": "DRAWING",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 20
+    },
+    {
+      "id": "sub-cls-7-gram",
+      "classId": "cls-7",
+      "code": "GRM-7",
+      "name": "GRAMMAR",
+      "category": "compulsory",
+      "gradingMode": "academic",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 18,
+      "passMarksPractical": 0,
+      "creditHourTheory": 2,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 7
+    },
+    {
+      "id": "sub-cls-7-gk",
+      "classId": "cls-7",
+      "code": "GK-7",
+      "name": "GENERAL KNOWLEDGE (GK)",
+      "category": "compulsory",
+      "gradingMode": "academic",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 18,
+      "passMarksPractical": 0,
+      "creditHourTheory": 2,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 8
+    },
+    {
+      "id": "sub-cls-7-draw",
+      "classId": "cls-7",
+      "code": "DRW-7",
+      "name": "DRAWING",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 20
+    },
+    {
+      "id": "sub-cls-8-gram",
+      "classId": "cls-8",
+      "code": "GRM-8",
+      "name": "GRAMMAR",
+      "category": "compulsory",
+      "gradingMode": "academic",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 18,
+      "passMarksPractical": 0,
+      "creditHourTheory": 2,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 7
+    },
+    {
+      "id": "sub-cls-8-gk",
+      "classId": "cls-8",
+      "code": "GK-8",
+      "name": "GENERAL KNOWLEDGE (GK)",
+      "category": "compulsory",
+      "gradingMode": "academic",
+      "fullMarksTheory": 50,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 18,
+      "passMarksPractical": 0,
+      "creditHourTheory": 2,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 8
+    },
+    {
+      "id": "sub-cls-8-draw",
+      "classId": "cls-8",
+      "code": "DRW-8",
+      "name": "DRAWING",
+      "category": "compulsory",
+      "gradingMode": "grade_only",
+      "fullMarksTheory": 0,
+      "fullMarksPractical": 0,
+      "passMarksTheory": 0,
+      "passMarksPractical": 0,
+      "creditHourTheory": 0,
+      "creditHourPractical": 0,
+      "conversionRule": "none",
+      "status": "active",
+      "displayOrder": 20
+    }
+  ],
+  "students": [
+    {
+      "id": "stu-9-1",
+      "studentCode": "710100021-901",
+      "name": "Aadarsh Rana",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "rollNo": 1,
+      "academicYear": "2082",
+      "guardianName": "Bikram Rana",
+      "contact": "9848011201",
+      "optionalSubjects": {
+        "opt_1": "sub-9-opt1-eco",
+        "opt_2": "sub-9-opt2-cs"
+      },
+      "status": "active"
+    },
+    {
+      "id": "stu-9-2",
+      "studentCode": "710100021-902",
+      "name": "Aaditya Raj Chaudhary",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "rollNo": 2,
+      "academicYear": "2082",
+      "guardianName": "Ramesh Chaudhary",
+      "contact": "9848011202",
+      "optionalSubjects": {
+        "opt_1": "sub-9-opt1-eco",
+        "opt_2": "sub-9-opt2-cs"
+      },
+      "status": "active"
+    },
+    {
+      "id": "stu-9-3",
+      "studentCode": "710100021-903",
+      "name": "Aaditya Rana",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "rollNo": 3,
+      "academicYear": "2082",
+      "guardianName": "Kamal Rana",
+      "contact": "9848011203",
+      "optionalSubjects": {
+        "opt_1": "sub-9-opt1-amth",
+        "opt_2": "sub-9-opt2-cs"
+      },
+      "status": "active"
+    },
+    {
+      "id": "stu-9-4",
+      "studentCode": "710100021-904",
+      "name": "Aaryan Chaudhary",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "rollNo": 4,
+      "academicYear": "2082",
+      "guardianName": "Suresh Chaudhary",
+      "contact": "9848011204",
+      "optionalSubjects": {
+        "opt_1": "sub-9-opt1-amth",
+        "opt_2": "sub-9-opt2-cs"
+      },
+      "status": "active"
+    },
+    {
+      "id": "stu-9-5",
+      "studentCode": "710100021-905",
+      "name": "Aayush Barnwar",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "rollNo": 5,
+      "academicYear": "2082",
+      "guardianName": "Prakash Barnwar",
+      "contact": "9848011205",
+      "optionalSubjects": {
+        "opt_1": "sub-9-opt1-amth",
+        "opt_2": "sub-9-opt2-cs"
+      },
+      "status": "active"
+    },
+    {
+      "id": "stu-9-6",
+      "studentCode": "710100021-906",
+      "name": "Aayushma Bogati",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "rollNo": 6,
+      "academicYear": "2082",
+      "guardianName": "Deepak Bogati",
+      "contact": "9848011206",
+      "optionalSubjects": {
+        "opt_1": "sub-9-opt1-amth",
+        "opt_2": "sub-9-opt2-cs"
+      },
+      "status": "active"
+    },
+    {
+      "id": "stu-6-1",
+      "studentCode": "710100021-601",
+      "name": "Pratiksha Joshi",
+      "classId": "cls-6",
+      "sectionId": "sec-6-a",
+      "rollNo": 1,
+      "academicYear": "2082",
+      "guardianName": "Harish Joshi",
+      "contact": "9848011301",
+      "optionalSubjects": {},
+      "status": "active"
+    },
+    {
+      "id": "stu-6-2",
+      "studentCode": "710100021-602",
+      "name": "Rohan Thapa",
+      "classId": "cls-6",
+      "sectionId": "sec-6-a",
+      "rollNo": 2,
+      "academicYear": "2082",
+      "guardianName": "Nabin Thapa",
+      "contact": "9848011302",
+      "optionalSubjects": {},
+      "status": "active"
+    },
+    {
+      "id": "stu-6-3",
+      "studentCode": "710100021-603",
+      "name": "Srijana Pant",
+      "classId": "cls-6",
+      "sectionId": "sec-6-a",
+      "rollNo": 3,
+      "academicYear": "2082",
+      "guardianName": "Govinda Pant",
+      "contact": "9848011303",
+      "optionalSubjects": {},
+      "status": "active"
+    },
+    {
+      "id": "stu-2-1",
+      "studentCode": "710100021-201",
+      "name": "Aarav Bhatt",
+      "classId": "cls-2",
+      "sectionId": "sec-2-a",
+      "rollNo": 1,
+      "academicYear": "2082",
+      "guardianName": "Keshav Bhatt",
+      "contact": "9848011401",
+      "optionalSubjects": {},
+      "status": "active"
+    },
+    {
+      "id": "stu-2-2",
+      "studentCode": "710100021-202",
+      "name": "Diya Bohara",
+      "classId": "cls-2",
+      "sectionId": "sec-2-a",
+      "rollNo": 2,
+      "academicYear": "2082",
+      "guardianName": "Tek Bohara",
+      "contact": "9848011402",
+      "optionalSubjects": {},
+      "status": "active"
+    },
+    {
+      "id": "stu-10-1",
+      "studentCode": "710100021-1001",
+      "name": "Bishal Saud",
+      "classId": "cls-10",
+      "sectionId": "sec-10-a",
+      "rollNo": 1,
+      "academicYear": "2082",
+      "guardianName": "Prem Saud",
+      "contact": "9848011501",
+      "optionalSubjects": {
+        "opt_1": "sub-10-opt1-amth",
+        "opt_2": "sub-10-opt2-cs"
+      },
+      "status": "active"
+    },
+    {
+      "id": "stu-10-2",
+      "studentCode": "710100021-1002",
+      "name": "Kritika Dhami",
+      "classId": "cls-10",
+      "sectionId": "sec-10-a",
+      "rollNo": 2,
+      "academicYear": "2082",
+      "guardianName": "Madan Dhami",
+      "contact": "9848011502",
+      "optionalSubjects": {
+        "opt_1": "sub-10-opt1-eco",
+        "opt_2": "sub-10-opt2-cs"
+      },
+      "status": "active"
+    },
+    {
+      "id": "stu-1794299851219",
+      "studentCode": "STU-1794299851219",
+      "name": "Suman Chaudhary",
+      "classId": "cls-nursery",
+      "sectionId": "sec-nur-a",
+      "rollNo": 1,
+      "academicYear": "2082",
+      "guardianName": "",
+      "contact": "",
+      "optionalSubjects": {},
+      "status": "active"
+    }
+  ],
+  "exams": [
+    {
+      "id": "exam-1",
+      "name": "First Terminal Examination",
+      "term": "first",
+      "academicYear": "2083 B.S.",
+      "workingDays": 68,
+      "dateOfIssue": "2083-04-20",
+      "status": "active"
+    },
+    {
+      "id": "exam-2",
+      "name": "Second Terminal Examination",
+      "term": "second",
+      "academicYear": "2083 B.S.",
+      "workingDays": 72,
+      "dateOfIssue": "2083-08-06",
+      "status": "active"
+    },
+    {
+      "id": "exam-3",
+      "name": "Third Terminal Examination",
+      "term": "third",
+      "academicYear": "2083 B.S.",
+      "workingDays": 80,
+      "dateOfIssue": "2083-10-10",
+      "status": "active"
+    },
+    {
+      "id": "exam-4",
+      "name": "Annual Examination",
+      "term": "annual",
+      "academicYear": "2083 B.S.",
+      "workingDays": 210,
+      "dateOfIssue": "2083-12-02",
+      "status": "active"
+    }
+  ],
+  "marks": [
+    {
+      "id": "exam-2__stu-9-1",
+      "examId": "exam-2",
+      "studentId": "stu-9-1",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "workingDays": 72,
+      "presentDays": 68,
+      "subjects": {
+        "sub-9-nep": {
+          "theoryObtained": 61,
+          "practicalObtained": 17
+        },
+        "sub-9-eng": {
+          "theoryObtained": 66,
+          "practicalObtained": 18
+        },
+        "sub-9-math": {
+          "theoryObtained": 69,
+          "practicalObtained": 18
+        },
+        "sub-9-sci": {
+          "theoryObtained": 63,
+          "practicalObtained": 17
+        },
+        "sub-9-soc": {
+          "theoryObtained": 58,
+          "practicalObtained": 16
+        },
+        "sub-9-opt1-eco": {
+          "theoryObtained": 64,
+          "practicalObtained": 18
+        },
+        "sub-9-opt2-cs": {
+          "theoryObtained": 70,
+          "practicalObtained": 19
+        }
+      }
+    },
+    {
+      "id": "exam-2__stu-9-2",
+      "examId": "exam-2",
+      "studentId": "stu-9-2",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "workingDays": 72,
+      "presentDays": 65,
+      "subjects": {
+        "sub-9-nep": {
+          "theoryObtained": 54,
+          "practicalObtained": 16
+        },
+        "sub-9-eng": {
+          "theoryObtained": 58,
+          "practicalObtained": 17
+        },
+        "sub-9-math": {
+          "theoryObtained": 52,
+          "practicalObtained": 15
+        },
+        "sub-9-sci": {
+          "theoryObtained": 56,
+          "practicalObtained": 16
+        },
+        "sub-9-soc": {
+          "theoryObtained": 50,
+          "practicalObtained": 15
+        },
+        "sub-9-opt1-eco": {
+          "theoryObtained": 55,
+          "practicalObtained": 16
+        },
+        "sub-9-opt2-cs": {
+          "theoryObtained": 62,
+          "practicalObtained": 18
+        }
+      }
+    },
+    {
+      "id": "exam-2__stu-9-3",
+      "examId": "exam-2",
+      "studentId": "stu-9-3",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "workingDays": 72,
+      "presentDays": 70,
+      "subjects": {
+        "sub-9-nep": {
+          "theoryObtained": 67,
+          "practicalObtained": 18
+        },
+        "sub-9-eng": {
+          "theoryObtained": 71,
+          "practicalObtained": 19
+        },
+        "sub-9-math": {
+          "theoryObtained": 73,
+          "practicalObtained": 19
+        },
+        "sub-9-sci": {
+          "theoryObtained": 68,
+          "practicalObtained": 18
+        },
+        "sub-9-soc": {
+          "theoryObtained": 64,
+          "practicalObtained": 17
+        },
+        "sub-9-opt1-amth": {
+          "theoryObtained": 71,
+          "practicalObtained": 19
+        },
+        "sub-9-opt2-cs": {
+          "theoryObtained": 72,
+          "practicalObtained": 19
+        }
+      }
+    },
+    {
+      "id": "exam-2__stu-9-4",
+      "examId": "exam-2",
+      "studentId": "stu-9-4",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "workingDays": 72,
+      "presentDays": 61,
+      "subjects": {
+        "sub-9-nep": {
+          "theoryObtained": 44,
+          "practicalObtained": 14
+        },
+        "sub-9-eng": {
+          "theoryObtained": 47,
+          "practicalObtained": 15
+        },
+        "sub-9-math": {
+          "theoryObtained": 39,
+          "practicalObtained": 13
+        },
+        "sub-9-sci": {
+          "theoryObtained": 42,
+          "practicalObtained": 14
+        },
+        "sub-9-soc": {
+          "theoryObtained": 46,
+          "practicalObtained": 14
+        },
+        "sub-9-opt1-amth": {
+          "theoryObtained": 37,
+          "practicalObtained": 13
+        },
+        "sub-9-opt2-cs": {
+          "theoryObtained": 51,
+          "practicalObtained": 16
+        }
+      }
+    },
+    {
+      "id": "exam-2__stu-9-5",
+      "examId": "exam-2",
+      "studentId": "stu-9-5",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "workingDays": 72,
+      "presentDays": 69,
+      "subjects": {
+        "sub-9-nep": {
+          "theoryObtained": 59,
+          "practicalObtained": 17
+        },
+        "sub-9-eng": {
+          "theoryObtained": 63,
+          "practicalObtained": 17
+        },
+        "sub-9-math": {
+          "theoryObtained": 66,
+          "practicalObtained": 18
+        },
+        "sub-9-sci": {
+          "theoryObtained": 61,
+          "practicalObtained": 17
+        },
+        "sub-9-soc": {
+          "theoryObtained": 57,
+          "practicalObtained": 16
+        },
+        "sub-9-opt1-amth": {
+          "theoryObtained": 64,
+          "practicalObtained": 18
+        },
+        "sub-9-opt2-cs": {
+          "theoryObtained": 68,
+          "practicalObtained": 18
+        }
+      }
+    },
+    {
+      "id": "exam-2__stu-9-6",
+      "examId": "exam-2",
+      "studentId": "stu-9-6",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "workingDays": 72,
+      "presentDays": 60,
+      "subjects": {
+        "sub-9-nep": {
+          "theoryObtained": 51,
+          "practicalObtained": 15
+        },
+        "sub-9-eng": {
+          "theoryObtained": 49,
+          "practicalObtained": 15
+        },
+        "sub-9-math": {
+          "theoryObtained": 22,
+          "practicalObtained": 11
+        },
+        "sub-9-sci": {
+          "theoryObtained": 45,
+          "practicalObtained": 14
+        },
+        "sub-9-soc": {
+          "theoryObtained": 48,
+          "practicalObtained": 15
+        },
+        "sub-9-opt1-amth": {
+          "theoryObtained": 31,
+          "practicalObtained": 12
+        },
+        "sub-9-opt2-cs": {
+          "theoryObtained": 54,
+          "practicalObtained": 16
+        }
+      }
+    },
+    {
+      "id": "exam-2__stu-6-1",
+      "examId": "exam-2",
+      "studentId": "stu-6-1",
+      "classId": "cls-6",
+      "sectionId": "sec-6-a",
+      "workingDays": 72,
+      "presentDays": 70,
+      "subjects": {
+        "sub-6-nep": {
+          "theoryObtained": 44,
+          "practicalObtained": 37
+        },
+        "sub-6-eng": {
+          "theoryObtained": 46,
+          "practicalObtained": 38
+        },
+        "sub-6-math": {
+          "theoryObtained": 48,
+          "practicalObtained": 39
+        },
+        "sub-6-sci": {
+          "theoryObtained": 45,
+          "practicalObtained": 37
+        },
+        "sub-6-soc": {
+          "theoryObtained": 43,
+          "practicalObtained": 36
+        },
+        "sub-6-comp": {
+          "theoryObtained": 47,
+          "practicalObtained": 39
+        }
+      }
+    },
+    {
+      "id": "exam-2__stu-6-2",
+      "examId": "exam-2",
+      "studentId": "stu-6-2",
+      "classId": "cls-6",
+      "sectionId": "sec-6-a",
+      "workingDays": 72,
+      "presentDays": 66,
+      "subjects": {
+        "sub-6-nep": {
+          "theoryObtained": 36,
+          "practicalObtained": 32
+        },
+        "sub-6-eng": {
+          "theoryObtained": 39,
+          "practicalObtained": 33
+        },
+        "sub-6-math": {
+          "theoryObtained": 41,
+          "practicalObtained": 35
+        },
+        "sub-6-sci": {
+          "theoryObtained": 38,
+          "practicalObtained": 34
+        },
+        "sub-6-soc": {
+          "theoryObtained": 35,
+          "practicalObtained": 31
+        },
+        "sub-6-comp": {
+          "theoryObtained": 42,
+          "practicalObtained": 36
+        }
+      }
+    },
+    {
+      "id": "exam-2__stu-6-3",
+      "examId": "exam-2",
+      "studentId": "stu-6-3",
+      "classId": "cls-6",
+      "sectionId": "sec-6-a",
+      "workingDays": 72,
+      "presentDays": 68,
+      "subjects": {
+        "sub-6-nep": {
+          "theoryObtained": 41,
+          "practicalObtained": 35
+        },
+        "sub-6-eng": {
+          "theoryObtained": 43,
+          "practicalObtained": 36
+        },
+        "sub-6-math": {
+          "theoryObtained": 39,
+          "practicalObtained": 34
+        },
+        "sub-6-sci": {
+          "theoryObtained": 40,
+          "practicalObtained": 35
+        },
+        "sub-6-soc": {
+          "theoryObtained": 42,
+          "practicalObtained": 36
+        },
+        "sub-6-comp": {
+          "theoryObtained": 44,
+          "practicalObtained": 37
+        }
+      }
+    },
+    {
+      "id": "exam-2__stu-2-1",
+      "examId": "exam-2",
+      "studentId": "stu-2-1",
+      "classId": "cls-2",
+      "sectionId": "sec-2-a",
+      "workingDays": 72,
+      "presentDays": 71,
+      "subjects": {
+        "sub-2-nep": {
+          "theoryObtained": 88,
+          "practicalObtained": 0
+        },
+        "sub-2-eng": {
+          "theoryObtained": 92,
+          "practicalObtained": 0
+        },
+        "sub-2-math": {
+          "theoryObtained": 95,
+          "practicalObtained": 0
+        },
+        "sub-2-sero": {
+          "theoryObtained": 74,
+          "practicalObtained": 19
+        }
+      }
+    },
+    {
+      "id": "exam-2__stu-2-2",
+      "examId": "exam-2",
+      "studentId": "stu-2-2",
+      "classId": "cls-2",
+      "sectionId": "sec-2-a",
+      "workingDays": 72,
+      "presentDays": 67,
+      "subjects": {
+        "sub-2-nep": {
+          "theoryObtained": 79,
+          "practicalObtained": 0
+        },
+        "sub-2-eng": {
+          "theoryObtained": 84,
+          "practicalObtained": 0
+        },
+        "sub-2-math": {
+          "theoryObtained": 81,
+          "practicalObtained": 0
+        },
+        "sub-2-sero": {
+          "theoryObtained": 68,
+          "practicalObtained": 17
+        }
+      }
+    },
+    {
+      "id": "exam-2__stu-1794299851219",
+      "examId": "exam-2",
+      "studentId": "stu-1794299851219",
+      "classId": "cls-nursery",
+      "sectionId": "sec-nur-a",
+      "workingDays": 72,
+      "presentDays": 72,
+      "subjects": {
+        "sub-1794299556085": {
+          "theoryObtained": 98,
+          "practicalObtained": null
+        },
+        "sub-1794299623132": {
+          "theoryObtained": 40,
+          "practicalObtained": null
+        },
+        "sub-1794299660356": {
+          "theoryObtained": 96,
+          "practicalObtained": null
+        },
+        "sub-1794299712988": {
+          "theoryObtained": 30,
+          "practicalObtained": null
+        },
+        "sub-1794299735916": {
+          "theoryObtained": 60,
+          "practicalObtained": null
+        }
+      }
+    }
+  ],
+  "academicYears": [
+    "2081 B.S",
+    "2082 B.S",
+    "2083 B.S"
+  ],
+  "teachers": [
+    {
+      "id": "tch-1",
+      "teacherCode": "TCH-001",
+      "name": "Ram Prasad Joshi",
+      "email": "ram.joshi@aristohighschool.edu.np",
+      "phone": "9848021001",
+      "qualification": "M.Sc. Mathematics",
+      "specialization": "Mathematics & Add. Maths",
+      "status": "active",
+      "joinedDate": "2074-01-15"
+    },
+    {
+      "id": "tch-2",
+      "teacherCode": "TCH-002",
+      "name": "Sita Kumari Thapa",
+      "email": "sita.thapa@aristohighschool.edu.np",
+      "phone": "9848021002",
+      "qualification": "M.A. English",
+      "specialization": "English & Grammar",
+      "status": "active",
+      "joinedDate": "2075-02-10"
+    },
+    {
+      "id": "tch-3",
+      "teacherCode": "TCH-003",
+      "name": "Hari Bahadur Bohara",
+      "email": "hari.bohara@aristohighschool.edu.np",
+      "phone": "9848021003",
+      "qualification": "M.A. Nepali",
+      "specialization": "Nepali & Social Studies",
+      "status": "active",
+      "joinedDate": "2073-04-01"
+    },
+    {
+      "id": "tch-4",
+      "teacherCode": "TCH-004",
+      "name": "Gita Devi Pant",
+      "email": "gita.pant@aristohighschool.edu.np",
+      "phone": "9848021004",
+      "qualification": "M.Sc. Physics",
+      "specialization": "Science & Environment Science",
+      "status": "active",
+      "joinedDate": "2076-01-20"
+    },
+    {
+      "id": "tch-5",
+      "teacherCode": "TCH-005",
+      "name": "Bikash Chandra Bhatta",
+      "email": "bikash.bhatta@aristohighschool.edu.np",
+      "phone": "9848021005",
+      "qualification": "MIT / B.Sc. CSIT",
+      "specialization": "Computer Science",
+      "status": "active",
+      "joinedDate": "2077-05-12"
+    },
+    {
+      "id": "tch-6",
+      "teacherCode": "TCH-006",
+      "name": "Laxmi Kumari Saud",
+      "email": "laxmi.saud@aristohighschool.edu.np",
+      "phone": "9848021006",
+      "qualification": "MBS / M.A. Economics",
+      "specialization": "Economics & Accounting",
+      "status": "active",
+      "joinedDate": "2078-01-05"
+    },
+    {
+      "id": "tch-7",
+      "teacherCode": "TCH-007",
+      "name": "Nirmala Chaudhary",
+      "email": "nirmala.chaudhary@aristohighschool.edu.np",
+      "phone": "9848021007",
+      "qualification": "B.Ed. Primary Education",
+      "specialization": "Primary & Pre-Primary",
+      "status": "active",
+      "joinedDate": "2079-02-01"
+    },
+    {
+      "id": "tch-8",
+      "teacherCode": "TCH-008",
+      "name": "Dipendra Singh Dhami",
+      "email": "dipendra.dhami@aristohighschool.edu.np",
+      "phone": "9848021008",
+      "qualification": "M.Ed. Social Science",
+      "specialization": "Social Studies & GK",
+      "status": "active",
+      "joinedDate": "2080-01-12"
+    }
+  ],
+  "teacher_subject_assignments": [
+    {
+      "id": "asg-2082-9a-nep",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-3",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "subjectId": "sub-9-nep",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 1 (09:30–10:15)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-10"
+    },
+    {
+      "id": "asg-2082-9a-eng",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-2",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "subjectId": "sub-9-eng",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 2 (10:15–11:00)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-10"
+    },
+    {
+      "id": "asg-2082-9a-math",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-1",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "subjectId": "sub-9-math",
+      "assignmentType": "class_teacher",
+      "periodSlot": "Period 3 (11:00–11:45)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-10"
+    },
+    {
+      "id": "asg-2082-9a-sci",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-4",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "subjectId": "sub-9-sci",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 4 (11:45–12:30)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-10"
+    },
+    {
+      "id": "asg-2082-9a-soc",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-8",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "subjectId": "sub-9-soc",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 5 (13:00–13:45)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-10"
+    },
+    {
+      "id": "asg-2082-9a-eco",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-6",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "subjectId": "sub-9-opt1-eco",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 6 (13:45–14:30)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-10"
+    },
+    {
+      "id": "asg-2082-9a-amth",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-1",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "subjectId": "sub-9-opt1-amth",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 6 (13:45–14:30)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-10"
+    },
+    {
+      "id": "asg-2082-9a-cs",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-5",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "subjectId": "sub-9-opt2-cs",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 7 (14:30–15:15)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-10"
+    },
+    {
+      "id": "asg-2082-6a-math",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-1",
+      "classId": "cls-6",
+      "sectionId": "sec-6-a",
+      "subjectId": "sub-6-math",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 1 (09:30–10:15)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-11"
+    },
+    {
+      "id": "asg-2082-6a-eng",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-2",
+      "classId": "cls-6",
+      "sectionId": "sec-6-a",
+      "subjectId": "sub-6-eng",
+      "assignmentType": "class_teacher",
+      "periodSlot": "Period 3 (11:00–11:45)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-11"
+    },
+    {
+      "id": "asg-2082-6a-sci",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-4",
+      "classId": "cls-6",
+      "sectionId": "sec-6-a",
+      "subjectId": "sub-6-sci",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 2 (10:15–11:00)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-11"
+    },
+    {
+      "id": "asg-2082-6a-comp",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-5",
+      "classId": "cls-6",
+      "sectionId": "sec-6-a",
+      "subjectId": "sub-6-comp",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 5 (13:00–13:45)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-11"
+    },
+    {
+      "id": "asg-2082-2a-nep",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-7",
+      "classId": "cls-2",
+      "sectionId": "sec-2-a",
+      "subjectId": "sub-2-nep",
+      "assignmentType": "class_teacher",
+      "periodSlot": "Period 1 (09:30–10:15)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-12"
+    },
+    {
+      "id": "asg-2082-2a-eng",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-7",
+      "classId": "cls-2",
+      "sectionId": "sec-2-a",
+      "subjectId": "sub-2-eng",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 2 (10:15–11:00)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-12"
+    },
+    {
+      "id": "asg-2082-2a-math",
+      "academicYearId": "2082 B.S",
+      "teacherId": "tch-7",
+      "classId": "cls-2",
+      "sectionId": "sec-2-a",
+      "subjectId": "sub-2-math",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 3 (11:00–11:45)",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-12"
+    },
+    {
+      "id": "asg-2081-9a-math",
+      "academicYearId": "2081 B.S",
+      "teacherId": "tch-1",
+      "classId": "cls-9",
+      "sectionId": "sec-9-a",
+      "subjectId": "sub-9-math",
+      "assignmentType": "class_teacher",
+      "periodSlot": "Period 3 (11:00–11:45)",
+      "createdBy": "Admin",
+      "createdDate": "2081-01-12"
+    },
+    {
+      "id": "asg-2081-10a-math",
+      "academicYearId": "2081 B.S",
+      "teacherId": "tch-1",
+      "classId": "cls-10",
+      "sectionId": "sec-10-a",
+      "subjectId": "sub-10-math",
+      "assignmentType": "subject_teacher",
+      "periodSlot": "Period 4 (11:45–12:30)",
+      "createdBy": "Admin",
+      "createdDate": "2081-01-12"
+    }
+  ],
+  "teacher_passports": [
+    {
+      "id": "pp-2082-001",
+      "passportNumber": "ARISTO-PP-2082-001",
+      "passportTitle": "Class Teacher Passport",
+      "username": "ram.joshi",
+      "passcode": "Aristo@001",
+      "assignedTeacherId": "tch-1",
+      "issuedDate": "2082-01-10",
+      "expiryDate": "2083-12-30",
+      "status": "active",
+      "notes": "Grade 9A Class Teacher & Mathematics access credential",
+      "createdBy": "Admin",
+      "createdDate": "2082-01-10",
+      "assignedDate": "2082-01-10"
+    }
+  ],
+  "admin_security": {
+    "isConfigured": false,
+    "adminUsername": "admin",
+    "adminDisplayName": "Principal / Exam Admin",
+    "passwordHash": "",
+    "passwordSalt": "",
+    "recoveryQuestion": "What is the school's founding year (B.S.)?",
+    "recoveryAnswerHash": "",
+    "requireOnRoleSwitch": true,
+    "requireOnAppStart": false,
+    "maxFailedAttempts": 5,
+    "requirements": {
+      "minLength": 8,
+      "requireUppercase": true,
+      "requireLowercase": true,
+      "requireNumber": true,
+      "requireSpecialChar": true
+    }
+  }
+}
