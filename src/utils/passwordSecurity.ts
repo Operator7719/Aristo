@@ -191,3 +191,25 @@ export function createSalt(): string {
 export function hashSecret(secret: string, salt: string): string {
   return sha256Hex(`${salt}::${secret}`);
 }
+
+export function hashTeacherPasscode(rawSecret: string): {
+  passwordSalt: string;
+  passwordHash: string;
+} {
+  const passwordSalt = createSalt();
+  const passwordHash = hashSecret(rawSecret.trim(), passwordSalt);
+  return { passwordSalt, passwordHash };
+}
+
+export function verifyTeacherPassportSecret(
+  passport: { passcode?: string; passwordHash?: string; passwordSalt?: string },
+  rawSecret: string,
+): boolean {
+  const candidate = rawSecret.trim();
+  if (!candidate) return false;
+  if (passport.passwordHash && passport.passwordSalt) {
+    return hashSecret(candidate, passport.passwordSalt) === passport.passwordHash;
+  }
+  return Boolean(passport.passcode) && passport.passcode === candidate;
+}
+

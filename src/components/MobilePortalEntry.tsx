@@ -17,10 +17,12 @@ import {
   Teacher,
   TeacherPassport,
 } from '../types';
+import { DEFAULT_AUTHORIZED_ADMIN_EMAIL } from '../data/seedData';
 import {
   createSalt,
   evaluateAdminPassword,
   hashSecret,
+  verifyTeacherPassportSecret,
 } from '../utils/passwordSecurity';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -28,7 +30,10 @@ interface MobilePortalEntryProps {
   db: SchoolDatabase;
   initialOption?: 'select' | 'teacher' | 'admin';
   onTeacherAuthenticated: (passport: TeacherPassport, teacher: Teacher) => void;
-  onAdminAuthenticated: (goToPasswordSetup?: boolean) => void;
+  onAdminAuthenticated: (
+    authorizedEmail: string,
+    goToPasswordSetup?: boolean,
+  ) => void;
   onUpdateAdminSecurity: (config: AdminSecurityConfig) => void;
 }
 
@@ -51,6 +56,7 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
 
   // Admin Login state
   const adminSec = db.admin_security;
+  const [adminEmailInput, setAdminEmailInput] = useState('');
   const [adminUserInput, setAdminUserInput] = useState(
     adminSec?.adminUsername || 'admin',
   );
@@ -64,6 +70,7 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
 
   // Recovery state
   const [recoveryMode, setRecoveryMode] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState('');
   const [recoveryAnswer, setRecoveryAnswer] = useState('');
   const [recoveryNewPwd, setRecoveryNewPwd] = useState('');
   const [recoveryConfirmPwd, setRecoveryConfirmPwd] = useState('');
@@ -102,7 +109,7 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
       (p) =>
         (p.passportNumber.trim().toLowerCase() === normId ||
           p.username.trim().toLowerCase() === normId) &&
-        p.passcode === rawPass,
+        verifyTeacherPassportSecret(p, rawPass),
     );
     if (!match) {
       setTeacherError('Invalid teacher passport number/username or passcode.');
@@ -131,19 +138,55 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
     onTeacherAuthenticated(match, holder);
   };
 
+  const authorizedAdminEmail = (
+    adminSec?.authorizedAdminEmail || DEFAULT_AUTHORIZED_ADMIN_EMAIL
+  )
+    .trim()
+    .toLowerCase();
+
+  const recordAdminAuthFailure = (prefix: string) => {
+    const nextFails = failedAttempts + 1;
+    const maxFails = adminSec?.maxFailedAttempts || 5;
+    setFailedAttempts(nextFails);
+    if (nextFails >= maxFails) {
+      setLockoutUntilMs(Date.now() + 30000);
+      setNowMs(Date.now());
+      setAdminError(
+        `Too many failed attempts (${nextFails}/${maxFails}). Locked for 30 seconds.`,
+      );
+    } else {
+      setAdminError(`${prefix} (${nextFails}/${maxFails} attempts).`);
+    }
+  };
+
   const handleAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (lockoutRemainingSec > 0) return;
 
+    const enteredEmail = adminEmailInput.trim().toLowerCase();
+    if (!enteredEmail) {
+      setAdminError('Please enter your Authorized Admin Email.');
+      return;
+    }
+
+    if (enteredEmail !== authorizedAdminEmail) {
+      recordAdminAuthFailure(
+        'Access Denied: Admin Panel is restricted to one authorized user only. Other users or email addresses are not permitted',
+      );
+      return;
+    }
+
     if (!adminSec?.isConfigured) {
       setAdminError(null);
-      onAdminAuthenticated(setupPasswordAfterLogin);
+      setFailedAttempts(0);
+      setLockoutUntilMs(null);
+      onAdminAuthenticated(enteredEmail, setupPasswordAfterLogin);
       return;
     }
 
     const expectedUser = (adminSec.adminUsername || 'admin').trim().toLowerCase();
     if (adminUserInput.trim().toLowerCase() !== expectedUser) {
-      setAdminError('Incorrect Admin Username.');
+      recordAdminAuthFailure('Incorrect Admin Username');
       return;
     }
 
@@ -153,32 +196,27 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
         adminSec.passwordHash;
 
     if (!valid) {
-      const nextFails = failedAttempts + 1;
-      const maxFails = adminSec.maxFailedAttempts || 5;
-      setFailedAttempts(nextFails);
-      if (nextFails >= maxFails) {
-        setLockoutUntilMs(Date.now() + 30000);
-        setNowMs(Date.now());
-        setAdminError(
-          `Too many failed attempts (${nextFails}/${maxFails}). Locked for 30 seconds.`,
-        );
-      } else {
-        setAdminError(
-          `Incorrect Admin Password (${nextFails}/${maxFails} attempts).`,
-        );
-      }
+      recordAdminAuthFailure('Incorrect Admin Password');
       return;
     }
 
     setAdminError(null);
     setFailedAttempts(0);
     setLockoutUntilMs(null);
-    onAdminAuthenticated(false);
+    onAdminAuthenticated(enteredEmail, false);
   };
 
   const handleRecoverySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!adminSec?.isConfigured) return;
+
+    const enteredRecoveryEmail = recoveryEmail.trim().toLowerCase();
+    if (enteredRecoveryEmail !== authorizedAdminEmail) {
+      setAdminError(
+        'Access Denied: Only the single authorized administrator email can reset Admin Password access.',
+      );
+      return;
+    }
 
     const cleanAns = recoveryAnswer.trim().toLowerCase();
     if (
@@ -204,6 +242,8 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
     const nextSalt = createSalt();
     const updated: AdminSecurityConfig = {
       ...adminSec,
+      authorizedAdminEmail,
+      strictSingleUserOnly: true,
       passwordSalt: nextSalt,
       passwordHash: hashSecret(recoveryNewPwd, nextSalt),
       recoveryAnswerHash: hashSecret(cleanAns, nextSalt),
@@ -213,7 +253,7 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
     onUpdateAdminSecurity(updated);
     setAdminError(null);
     setRecoveryMode(false);
-    onAdminAuthenticated(false);
+    onAdminAuthenticated(authorizedAdminEmail, false);
   };
 
   return (
@@ -424,9 +464,7 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
                   {recoveryMode ? 'Recover Admin Password' : 'Admin Login'}
                 </h2>
                 <p className="text-xs text-slate-600">
-                  {adminSec?.isConfigured
-                    ? `${adminSec.adminDisplayName} (${adminSec.adminUsername})`
-                    : 'Administrator workspace access'}
+                  Restricted to 1 authorized administrator user only
                 </p>
               </div>
             </div>
@@ -440,6 +478,22 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
 
             {!recoveryMode ? (
               <form onSubmit={handleAdminSubmit} className="space-y-3.5">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Authorized Admin Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    autoComplete="email"
+                    disabled={lockoutRemainingSec > 0}
+                    value={adminEmailInput}
+                    onChange={(e) => setAdminEmailInput(e.target.value)}
+                    placeholder="Enter authorized administrator email"
+                    className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500 disabled:bg-slate-100"
+                  />
+                </div>
+
                 {adminSec?.isConfigured ? (
                   <>
                     <div>
@@ -450,9 +504,10 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
                         type="text"
                         required
                         autoComplete="username"
+                        disabled={lockoutRemainingSec > 0}
                         value={adminUserInput}
                         onChange={(e) => setAdminUserInput(e.target.value)}
-                        className="w-full px-3.5 py-2.5 text-sm font-mono border border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500"
+                        className="w-full px-3.5 py-2.5 text-sm font-mono border border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500 disabled:bg-slate-100"
                       />
                     </div>
                     <div>
@@ -499,6 +554,7 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
                         type="button"
                         onClick={() => {
                           setRecoveryMode(true);
+                          setRecoveryEmail(adminEmailInput);
                           setAdminError(null);
                         }}
                         className="text-xs font-semibold text-indigo-700 hover:underline"
@@ -511,10 +567,10 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
                   <>
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-950 space-y-1">
                       <div className="font-semibold">
-                        Admin Password Not Set Yet
+                        Single Authorized User Lock Active
                       </div>
                       <p className="text-[11px] text-amber-900">
-                        You can enter the Admin Portal right now and create a strong Admin Password under Administration → Admin Password.
+                        Only the authorized Admin email can open the Admin Panel. After signing in, create a strong Admin Password from the top-right corner.
                       </p>
                     </div>
                     <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
@@ -530,15 +586,31 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
                     </label>
                     <button
                       type="submit"
-                      className="w-full py-3 text-sm font-semibold text-white bg-indigo-700 hover:bg-indigo-800 rounded-xl transition-colors"
+                      disabled={lockoutRemainingSec > 0}
+                      className="w-full py-3 text-sm font-semibold text-white bg-indigo-700 hover:bg-indigo-800 disabled:opacity-50 rounded-xl transition-colors"
                     >
-                      Continue to Admin Portal
+                      {lockoutRemainingSec > 0
+                        ? `Locked (${lockoutRemainingSec}s remaining)`
+                        : 'Verify Email & Open Admin Panel'}
                     </button>
                   </>
                 )}
               </form>
             ) : (
               <form onSubmit={handleRecoverySubmit} className="space-y-3.5">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Authorized Admin Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={recoveryEmail}
+                    onChange={(e) => setRecoveryEmail(e.target.value)}
+                    placeholder="Enter authorized administrator email"
+                    className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl"
+                  />
+                </div>
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs">
                   <div className="font-semibold text-slate-700 mb-0.5">
                     Security Question

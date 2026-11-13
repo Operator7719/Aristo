@@ -18,13 +18,13 @@ import {
   LogOut,
   Menu,
   Settings,
-  ShieldCheck,
   Trophy,
   UserCheck,
   Users,
   X,
 } from 'lucide-react';
 import {
+  DEFAULT_AUTHORIZED_ADMIN_EMAIL,
   createSeedDatabase,
   ensureDefaultExams,
   ensureRequiredSubjects,
@@ -44,6 +44,7 @@ import {
   createSalt,
   evaluateAdminPassword,
   hashSecret,
+  verifyTeacherPassportSecret,
 } from './utils/passwordSecurity';
 import { DashboardView } from './components/DashboardView';
 import { StudentManagementView } from './components/StudentManagementView';
@@ -62,6 +63,10 @@ import { GradeSheetView } from './components/GradeSheetView';
 import { ExcelIOView } from './components/ExcelIOView';
 import { SettingsView } from './components/SettingsView';
 import { AdminPasswordView } from './components/AdminPasswordView';
+import {
+  PasswordManagementModal,
+  PasswordModalMode,
+} from './components/PasswordManagementModal';
 import { MobilePortalEntry } from './components/MobilePortalEntry';
 import {
   OfflineIndicator,
@@ -96,11 +101,6 @@ const ADMIN_NAV_GROUPS: NavGroup[] = [
         label: 'Subject Teacher Assign',
         icon: UserCheck,
       },
-      {
-        id: 'teacher-passports',
-        label: 'Teacher Passports',
-        icon: KeyRound,
-      },
     ],
   },
   {
@@ -123,7 +123,6 @@ const ADMIN_NAV_GROUPS: NavGroup[] = [
   {
     label: 'Administration',
     items: [
-      { id: 'admin-security', label: 'Admin Password', icon: Lock },
       { id: 'settings', label: 'Settings', icon: Settings },
     ],
   },
@@ -161,6 +160,7 @@ const PAGE_TITLES: Record<NavPage, string> = {
 };
 
 const ADMIN_SESSION_KEY = 'aristo_admin_unlocked';
+const ADMIN_EMAIL_SESSION_KEY = 'aristo_admin_email';
 
 export default function App() {
   const [db, setDb] = useState<SchoolDatabase | null>(null);
@@ -175,8 +175,12 @@ export default function App() {
     null,
   );
 
-  // Admin Password Lock & Recovery State
+  // Admin Password Lock & Single Authorized User Session State
   const [isAdminUnlocked, setIsAdminUnlocked] = useState<boolean>(true);
+  const [adminSessionEmail, setAdminSessionEmail] = useState<string>(
+    () => sessionStorage.getItem(ADMIN_EMAIL_SESSION_KEY) || '',
+  );
+  const [adminUnlockEmailInput, setAdminUnlockEmailInput] = useState('');
   const [adminUnlockPassword, setAdminUnlockPassword] = useState('');
   const [showAdminUnlockPwd, setShowAdminUnlockPwd] = useState(false);
   const [adminUnlockError, setAdminUnlockError] = useState<string | null>(null);
@@ -184,6 +188,7 @@ export default function App() {
   const [lockoutUntilMs, setLockoutUntilMs] = useState<number | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [showRecoveryMode, setShowRecoveryMode] = useState(false);
+  const [recoveryEmailInput, setRecoveryEmailInput] = useState('');
   const [recoveryAnswerInput, setRecoveryAnswerInput] = useState('');
   const [recoveryNewPwd, setRecoveryNewPwd] = useState('');
   const [recoveryConfirmPwd, setRecoveryConfirmPwd] = useState('');
@@ -194,6 +199,8 @@ export default function App() {
   );
   const [activePage, setActivePage] = useState<NavPage>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [passwordModalMode, setPasswordModalMode] =
+    useState<PasswordModalMode>(null);
   const [navContext, setNavContext] = useState<{
     examId?: string;
     classId?: string;
@@ -386,7 +393,7 @@ export default function App() {
       (p) =>
         (p.passportNumber.trim().toLowerCase() === normId ||
           p.username.trim().toLowerCase() === normId) &&
-        p.passcode === rawPass,
+        verifyTeacherPassportSecret(p, rawPass),
     );
     if (!match) {
       setPassportLoginError('Invalid teacher passport credentials.');
@@ -419,8 +426,18 @@ export default function App() {
   };
 
   const adminSecurity = db.admin_security;
+  const expectedAdminEmail = (
+    adminSecurity?.authorizedAdminEmail || DEFAULT_AUTHORIZED_ADMIN_EMAIL
+  )
+    .trim()
+    .toLowerCase();
+  const isAuthorizedAdminEmail =
+    adminSessionEmail.trim().toLowerCase() === expectedAdminEmail;
+
   const adminLockActive = Boolean(
-    userRole === 'admin' && adminSecurity?.isConfigured && !isAdminUnlocked,
+    userRole === 'admin' &&
+      (!isAuthorizedAdminEmail ||
+        (adminSecurity?.isConfigured && !isAdminUnlocked)),
   );
   const lockoutRemainingSec =
     lockoutUntilMs && lockoutUntilMs > nowMs
@@ -428,47 +445,60 @@ export default function App() {
       : 0;
 
   const lockAdminSession = () => {
-    if (!adminSecurity?.isConfigured) return;
     sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    sessionStorage.removeItem(ADMIN_EMAIL_SESSION_KEY);
+    setAdminSessionEmail('');
     setIsAdminUnlocked(false);
+    setAdminUnlockEmailInput('');
     setAdminUnlockPassword('');
     setAdminUnlockError(null);
     setShowRecoveryMode(false);
     setMobileMenuOpen(false);
   };
 
+  const recordUnlockFailure = (prefix: string) => {
+    const nextFails = failedAdminAttempts + 1;
+    const maxFails = adminSecurity?.maxFailedAttempts || 5;
+    setFailedAdminAttempts(nextFails);
+    if (nextFails >= maxFails) {
+      setLockoutUntilMs(Date.now() + 30000);
+      setNowMs(Date.now());
+      setAdminUnlockError(
+        `Too many failed attempts (${nextFails}/${maxFails}). Locked for 30 seconds.`,
+      );
+    } else {
+      setAdminUnlockError(`${prefix} (${nextFails}/${maxFails} attempts).`);
+    }
+  };
+
   const handleAdminUnlockSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!adminSecurity?.isConfigured) {
-      setIsAdminUnlocked(true);
-      return;
-    }
     if (lockoutRemainingSec > 0) return;
 
-    const valid =
-      Boolean(adminUnlockPassword) &&
-      hashSecret(adminUnlockPassword, adminSecurity.passwordSalt) ===
-        adminSecurity.passwordHash;
-    if (!valid) {
-      const nextFails = failedAdminAttempts + 1;
-      const maxFails = adminSecurity.maxFailedAttempts || 5;
-      setFailedAdminAttempts(nextFails);
-      if (nextFails >= maxFails) {
-        setLockoutUntilMs(Date.now() + 30000);
-        setNowMs(Date.now());
-        setAdminUnlockError(
-          `Too many failed attempts (${nextFails}/${maxFails}). Locked for 30 seconds.`,
-        );
-      } else {
-        setAdminUnlockError(
-          `Incorrect Admin Password (${nextFails}/${maxFails} attempts).`,
-        );
-      }
+    const enteredEmail = adminUnlockEmailInput.trim().toLowerCase();
+    if (!enteredEmail || enteredEmail !== expectedAdminEmail) {
+      recordUnlockFailure(
+        'Access Denied: Admin Panel is restricted to one authorized user only. Other users or emails cannot access the Admin Panel',
+      );
       return;
     }
 
+    if (adminSecurity?.isConfigured) {
+      const valid =
+        Boolean(adminUnlockPassword) &&
+        hashSecret(adminUnlockPassword, adminSecurity.passwordSalt) ===
+          adminSecurity.passwordHash;
+      if (!valid) {
+        recordUnlockFailure('Incorrect Admin Password');
+        return;
+      }
+    }
+
+    sessionStorage.setItem(ADMIN_EMAIL_SESSION_KEY, expectedAdminEmail);
     sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
+    setAdminSessionEmail(expectedAdminEmail);
     setIsAdminUnlocked(true);
+    setAdminUnlockEmailInput('');
     setAdminUnlockPassword('');
     setAdminUnlockError(null);
     setFailedAdminAttempts(0);
@@ -478,6 +508,15 @@ export default function App() {
   const handleAdminRecoverySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!adminSecurity?.isConfigured) return;
+
+    const enteredEmail = recoveryEmailInput.trim().toLowerCase();
+    if (!enteredEmail || enteredEmail !== expectedAdminEmail) {
+      setAdminUnlockError(
+        'Access Denied: Only the single authorized administrator email can recover Admin Panel access.',
+      );
+      return;
+    }
+
     const cleanAns = recoveryAnswerInput.trim().toLowerCase();
     if (
       hashSecret(cleanAns, adminSecurity.passwordSalt) !==
@@ -500,6 +539,8 @@ export default function App() {
     const nextSalt = createSalt();
     const updated: AdminSecurityConfig = {
       ...adminSecurity,
+      authorizedAdminEmail: expectedAdminEmail,
+      strictSingleUserOnly: true,
       passwordSalt: nextSalt,
       passwordHash: hashSecret(recoveryNewPwd, nextSalt),
       recoveryAnswerHash: hashSecret(cleanAns, nextSalt),
@@ -507,9 +548,12 @@ export default function App() {
       updatedBy: 'Admin Recovery',
     };
     persistDb({ ...db, admin_security: updated });
+    sessionStorage.setItem(ADMIN_EMAIL_SESSION_KEY, expectedAdminEmail);
     sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
+    setAdminSessionEmail(expectedAdminEmail);
     setIsAdminUnlocked(true);
     setShowRecoveryMode(false);
+    setRecoveryEmailInput('');
     setRecoveryAnswerInput('');
     setRecoveryNewPwd('');
     setRecoveryConfirmPwd('');
@@ -528,10 +572,12 @@ export default function App() {
     } else {
       if (
         prevRole === 'teacher' &&
-        adminSecurity?.isConfigured &&
-        adminSecurity.requireOnRoleSwitch
+        (!isAuthorizedAdminEmail ||
+          (adminSecurity?.isConfigured && adminSecurity.requireOnRoleSwitch))
       ) {
         sessionStorage.removeItem(ADMIN_SESSION_KEY);
+        sessionStorage.removeItem(ADMIN_EMAIL_SESSION_KEY);
+        setAdminSessionEmail('');
         setIsAdminUnlocked(false);
       }
       setActivePage('dashboard');
@@ -550,12 +596,15 @@ export default function App() {
     nextOption: 'select' | 'teacher' | 'admin' = 'select',
   ) => {
     sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    sessionStorage.removeItem(ADMIN_EMAIL_SESSION_KEY);
+    setAdminSessionEmail('');
     setPortalAuthenticated(false);
     setEntryOption(nextOption);
     setAuthenticatedPassportId(null);
     setPassportLoginId('');
     setPassportLoginCode('');
     setPassportLoginError(null);
+    setAdminUnlockEmailInput('');
     setAdminUnlockPassword('');
     setAdminUnlockError(null);
     setShowRecoveryMode(false);
@@ -569,6 +618,10 @@ export default function App() {
           db={db}
           initialOption={entryOption}
           onTeacherAuthenticated={(passport, teacher) => {
+            sessionStorage.removeItem(ADMIN_SESSION_KEY);
+            sessionStorage.removeItem(ADMIN_EMAIL_SESSION_KEY);
+            setAdminSessionEmail('');
+            setIsAdminUnlocked(false);
             setUserRole('teacher');
             setAuthenticatedPassportId(passport.id);
             setActiveTeacherId(teacher.id);
@@ -576,8 +629,11 @@ export default function App() {
             setActivePage('teacher-dashboard');
             setPortalAuthenticated(true);
           }}
-          onAdminAuthenticated={(goToPasswordSetup) => {
+          onAdminAuthenticated={(authorizedEmail, goToPasswordSetup) => {
+            const cleanEmail = authorizedEmail.trim().toLowerCase();
+            sessionStorage.setItem(ADMIN_EMAIL_SESSION_KEY, cleanEmail);
             sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
+            setAdminSessionEmail(cleanEmail);
             setUserRole('admin');
             setIsAdminUnlocked(true);
             setNavContext({});
@@ -595,34 +651,6 @@ export default function App() {
 
   const renderRoleSwitcher = () => (
     <div className="p-3 border-t border-slate-200 bg-pink-50/50 space-y-2.5">
-      <div className="text-[11px] font-semibold text-pink-900 flex items-center gap-1.5">
-        <ShieldCheck className="w-3.5 h-3.5 text-pink-700" />
-        <span>Portal Access Mode</span>
-      </div>
-      <div className="grid grid-cols-2 gap-1 p-1 bg-white border border-pink-200 rounded-lg">
-        <button
-          type="button"
-          onClick={() => switchRole('admin')}
-          className={`px-2 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-            userRole === 'admin'
-              ? 'bg-indigo-700 text-white'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          Admin
-        </button>
-        <button
-          type="button"
-          onClick={() => switchRole('teacher')}
-          className={`px-2 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-            userRole === 'teacher'
-              ? 'bg-pink-700 text-white'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          Teacher
-        </button>
-      </div>
       {userRole === 'admin' && (
         <div className="space-y-1.5">
           {adminSecurity?.isConfigured ? (
@@ -836,9 +864,9 @@ export default function App() {
 
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Top Bar Contract: Breadcrumb/Title — Context — 1 Primary Action */}
-        <header className="h-16 bg-white border-b border-slate-200 px-4 lg:px-6 flex items-center justify-between gap-8 no-print">
-          <div className="flex items-center gap-3 min-w-0">
+        {/* Top Bar Contract: Breadcrumb/Title — Context — Top-Right Password Management & Primary Action */}
+        <header className="min-h-16 bg-white border-b border-slate-200 px-3 sm:px-4 lg:px-6 py-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-4 no-print">
+          <div className="flex items-center gap-2.5 min-w-0">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
@@ -847,7 +875,7 @@ export default function App() {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="text-base font-bold text-slate-900 truncate whitespace-nowrap">
+            <h1 className="text-sm sm:text-base font-bold text-slate-900 truncate whitespace-nowrap">
               {adminLockActive
                 ? 'Admin Portal Authentication'
                 : userRole === 'teacher' && activePage === 'students'
@@ -856,23 +884,17 @@ export default function App() {
             </h1>
           </div>
 
-          <div className="hidden md:flex items-center gap-2 text-xs text-slate-500 whitespace-nowrap shrink-0">
+          <div className="hidden xl:flex items-center gap-2 text-xs text-slate-500 whitespace-nowrap shrink-0">
             <span>{db.settings.schoolName}</span>
             <span aria-hidden="true">·</span>
             <span className="font-mono">{db.settings.academicYear}</span>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <PWAInstallButton compact />
-            {adminLockActive ? (
-              <button
-                type="button"
-                onClick={() => switchRole('teacher')}
-                className="px-3.5 py-2 text-xs font-medium text-pink-800 bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
-              >
-                Teacher Sign-In
-              </button>
-            ) : userRole === 'teacher' ? (
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-end gap-1.5 sm:gap-2 ml-auto shrink-0">
+            <div className="hidden lg:block">
+              <PWAInstallButton compact />
+            </div>
+            {userRole === 'teacher' ? (
               activePage !== 'marks-entry' ? (
                 <button
                   type="button"
@@ -890,22 +912,79 @@ export default function App() {
                   My Dashboard
                 </button>
               )
-            ) : activePage !== 'grade-sheet' ? (
-              <button
-                type="button"
-                onClick={() => navigate('grade-sheet')}
-                className="px-3.5 py-2 text-xs font-medium text-white bg-indigo-700 hover:bg-indigo-800 rounded-lg transition-colors whitespace-nowrap shrink-0"
-              >
-                View Grade Sheet
-              </button>
+            ) : adminLockActive ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => switchRole('teacher')}
+                  className="hidden sm:inline-flex px-3 py-2 text-xs font-medium text-pink-800 bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
+                >
+                  Teacher Sign-In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRecoveryMode(false);
+                    setAdminUnlockError(null);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Unlock Admin</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (adminSecurity?.isConfigured) {
+                      setShowRecoveryMode(true);
+                    }
+                    setAdminUnlockError(null);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-indigo-700 hover:bg-indigo-800 rounded-lg transition-colors whitespace-nowrap shrink-0"
+                >
+                  <KeyRound className="w-3.5 h-3.5" />
+                  <span>Reset Password</span>
+                </button>
+              </>
             ) : (
-              <button
-                type="button"
-                onClick={() => navigate('marks-entry')}
-                className="px-3.5 py-2 text-xs font-medium text-white bg-indigo-700 hover:bg-indigo-800 rounded-lg transition-colors whitespace-nowrap shrink-0"
-              >
-                Edit Marks
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(activePage !== 'grade-sheet' ? 'grade-sheet' : 'marks-entry')
+                  }
+                  className="hidden xl:inline-flex px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
+                >
+                  {activePage !== 'grade-sheet' ? 'View Grade Sheet' : 'Edit Marks'}
+                </button>
+                {adminSecurity?.isConfigured && (
+                  <button
+                    type="button"
+                    onClick={lockAdminSession}
+                    title="Lock Admin Screen"
+                    className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
+                  >
+                    <Lock className="w-3.5 h-3.5 text-slate-600" />
+                    <span className="hidden lg:inline">Lock</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setPasswordModalMode('admin')}
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 rounded-lg shadow-sm transition-all whitespace-nowrap shrink-0"
+                >
+                  <Lock className="w-3.5 h-3.5 shrink-0" />
+                  <span>Create Admin Password</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPasswordModalMode('teacher')}
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 rounded-lg shadow-sm transition-all whitespace-nowrap shrink-0"
+                >
+                  <UserCheck className="w-3.5 h-3.5 shrink-0" />
+                  <span>Create Teacher Password</span>
+                </button>
+              </>
             )}
           </div>
         </header>
@@ -1000,7 +1079,7 @@ export default function App() {
                 </form>
               </div>
             )
-          ) : adminLockActive && adminSecurity ? (
+          ) : adminLockActive ? (
             <div className="max-w-md mx-auto mt-6 bg-white border border-slate-200 rounded-xl p-6 space-y-5">
               <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
                 <div className="w-10 h-10 rounded-lg bg-indigo-700 text-white flex items-center justify-center shrink-0">
@@ -1010,10 +1089,10 @@ export default function App() {
                   <h2 className="text-base font-bold text-slate-900">
                     {showRecoveryMode
                       ? 'Recover Admin Password'
-                      : 'Admin Password Required'}
+                      : 'Authorized Admin Access Required'}
                   </h2>
                   <p className="text-xs text-slate-600 truncate">
-                    {adminSecurity.adminDisplayName} ({adminSecurity.adminUsername})
+                    Restricted to 1 authorized administrator user only
                   </p>
                 </div>
               </div>
@@ -1029,42 +1108,47 @@ export default function App() {
                 <form onSubmit={handleAdminUnlockSubmit} className="space-y-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Admin Username
+                      Authorized Admin Email
                     </label>
                     <input
-                      type="text"
-                      readOnly
-                      value={adminSecurity.adminUsername}
-                      className="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg bg-slate-50 text-slate-700"
+                      type="email"
+                      required
+                      disabled={lockoutRemainingSec > 0}
+                      value={adminUnlockEmailInput}
+                      onChange={(e) => setAdminUnlockEmailInput(e.target.value)}
+                      placeholder="Enter authorized administrator email"
+                      className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 disabled:bg-slate-100"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Admin Password
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showAdminUnlockPwd ? 'text' : 'password'}
-                        required
-                        disabled={lockoutRemainingSec > 0}
-                        value={adminUnlockPassword}
-                        onChange={(e) => setAdminUnlockPassword(e.target.value)}
-                        placeholder="Enter Admin Password"
-                        className="w-full pl-3 pr-9 py-2 text-xs font-mono border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 disabled:bg-slate-100"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowAdminUnlockPwd((v) => !v)}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
-                      >
-                        {showAdminUnlockPwd ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </button>
+                  {adminSecurity?.isConfigured && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Admin Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showAdminUnlockPwd ? 'text' : 'password'}
+                          required
+                          disabled={lockoutRemainingSec > 0}
+                          value={adminUnlockPassword}
+                          onChange={(e) => setAdminUnlockPassword(e.target.value)}
+                          placeholder="Enter Admin Password"
+                          className="w-full pl-3 pr-9 py-2 text-xs font-mono border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 disabled:bg-slate-100"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowAdminUnlockPwd((v) => !v)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                        >
+                          {showAdminUnlockPwd ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <button
                     type="submit"
                     disabled={lockoutRemainingSec > 0}
@@ -1072,19 +1156,24 @@ export default function App() {
                   >
                     {lockoutRemainingSec > 0
                       ? `Locked (${lockoutRemainingSec}s remaining)`
-                      : 'Unlock Admin Panel'}
+                      : 'Verify & Open Admin Panel'}
                   </button>
                   <div className="flex items-center justify-between pt-1 text-xs">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowRecoveryMode(true);
-                        setAdminUnlockError(null);
-                      }}
-                      className="text-indigo-700 font-semibold hover:underline"
-                    >
-                      Forgot Password?
-                    </button>
+                    {adminSecurity?.isConfigured ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowRecoveryMode(true);
+                          setRecoveryEmailInput(adminUnlockEmailInput);
+                          setAdminUnlockError(null);
+                        }}
+                        className="text-indigo-700 font-semibold hover:underline"
+                      >
+                        Forgot Password?
+                      </button>
+                    ) : (
+                      <span />
+                    )}
                     <button
                       type="button"
                       onClick={() => switchRole('teacher')}
@@ -1096,12 +1185,25 @@ export default function App() {
                 </form>
               ) : (
                 <form onSubmit={handleAdminRecoverySubmit} className="space-y-3.5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Authorized Admin Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={recoveryEmailInput}
+                      onChange={(e) => setRecoveryEmailInput(e.target.value)}
+                      placeholder="Enter authorized administrator email"
+                      className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                    />
+                  </div>
                   <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs">
                     <div className="font-semibold text-slate-700 mb-0.5">
                       Security Question
                     </div>
                     <div className="text-slate-900">
-                      {adminSecurity.recoveryQuestion}
+                      {adminSecurity?.recoveryQuestion}
                     </div>
                   </div>
                   <div>
@@ -1119,7 +1221,7 @@ export default function App() {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      New Admin Password (min {adminSecurity.requirements.minLength} chars)
+                      New Admin Password (min {adminSecurity?.requirements.minLength || 8} chars)
                     </label>
                     <input
                       type="password"
@@ -1310,6 +1412,14 @@ export default function App() {
                   userRole={userRole}
                   onUpdateAdminSecurity={(admin_security) => {
                     persistDb({ ...db, admin_security });
+                    const updatedEmail = (
+                      admin_security.authorizedAdminEmail ||
+                      DEFAULT_AUTHORIZED_ADMIN_EMAIL
+                    )
+                      .trim()
+                      .toLowerCase();
+                    sessionStorage.setItem(ADMIN_EMAIL_SESSION_KEY, updatedEmail);
+                    setAdminSessionEmail(updatedEmail);
                     if (admin_security.isConfigured) {
                       sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
                       setIsAdminUnlocked(true);
@@ -1473,6 +1583,23 @@ export default function App() {
           )}
         </nav>
       )}
+
+      <PasswordManagementModal
+        mode={passwordModalMode}
+        db={db}
+        isAuthorizedAdmin={
+          userRole === 'admin' && isAuthorizedAdminEmail && !adminLockActive
+        }
+        adminSessionEmail={adminSessionEmail}
+        onClose={() => setPasswordModalMode(null)}
+        onSaveAdminSecurity={(admin_security) =>
+          persistDb({ ...db, admin_security })
+        }
+        onSaveTeacherPassports={(teacher_passports) =>
+          persistDb({ ...db, teacher_passports })
+        }
+        onOpenAdvancedAdminSecurity={() => navigate('admin-security')}
+      />
 
       <OfflineIndicator />
     </div>

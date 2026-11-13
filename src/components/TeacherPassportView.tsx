@@ -33,6 +33,7 @@ import {
 } from '../types';
 import { exportTeacherPassportsExcel } from '../utils/excelHelper';
 import { downloadTeacherPassportsPDF } from '../utils/pdfGenerator';
+import { hashTeacherPasscode } from '../utils/passwordSecurity';
 
 interface TeacherPassportViewProps {
   db: SchoolDatabase;
@@ -313,12 +314,17 @@ export const TeacherPassportView: React.FC<TeacherPassportViewProps> = ({
     }
 
     const today = new Date().toISOString().slice(0, 10);
+    const { passwordSalt, passwordHash } = hashTeacherPasscode(cleanPass);
     const newPassport: TeacherPassport = {
       id: `pp-${Date.now()}`,
       passportNumber: cleanNum,
       passportTitle: passportTitle.trim() || PASSPORT_TITLES[0],
       username: cleanUser,
-      passcode: cleanPass,
+      passcode: '',
+      passwordSalt,
+      passwordHash,
+      passwordUpdatedDate: today,
+      passwordUpdatedBy: 'Admin',
       assignedTeacherId: targetTeacherId,
       issuedDate: issuedDate || today,
       expiryDate: expiryDate || '2083-12-30',
@@ -454,7 +460,7 @@ export const TeacherPassportView: React.FC<TeacherPassportViewProps> = ({
     const cleanNum = editForm.passportNumber.trim();
     const cleanUser = editForm.username.trim().toLowerCase();
     const cleanPass = editForm.passcode.trim();
-    if (!cleanNum || !cleanUser || !cleanPass) {
+    if (!cleanNum || !cleanUser || (!cleanPass && !editingPassport.passwordHash)) {
       showFeedback('error', 'Passport Number, Username, and Passcode cannot be empty.');
       return;
     }
@@ -481,6 +487,18 @@ export const TeacherPassportView: React.FC<TeacherPassportViewProps> = ({
 
     const nextTeacherId = editForm.assignedTeacherId || null;
     const today = new Date().toISOString().slice(0, 10);
+    const nextCreds = cleanPass
+      ? {
+          passcode: '',
+          ...hashTeacherPasscode(cleanPass),
+          passwordUpdatedDate: today,
+          passwordUpdatedBy: 'Admin',
+        }
+      : {
+          passcode: '',
+          passwordHash: editingPassport.passwordHash,
+          passwordSalt: editingPassport.passwordSalt,
+        };
     const updated = passports.map((p) => {
       if (p.id === editingPassport.id) {
         return {
@@ -488,7 +506,7 @@ export const TeacherPassportView: React.FC<TeacherPassportViewProps> = ({
           passportNumber: cleanNum,
           passportTitle: editForm.passportTitle,
           username: cleanUser,
-          passcode: cleanPass,
+          ...nextCreds,
           issuedDate: editForm.issuedDate,
           expiryDate: editForm.expiryDate,
           status: editForm.status,
@@ -549,7 +567,8 @@ export const TeacherPassportView: React.FC<TeacherPassportViewProps> = ({
   };
 
   const handleCopyCredentials = (p: TeacherPassport) => {
-    const text = `Passport: ${p.passportNumber}\nUsername: ${p.username}\nPasscode: ${p.passcode}`;
+    const passInfo = p.passwordHash ? 'Hashed (Protected)' : p.passcode;
+    const text = `Passport: ${p.passportNumber}\nUsername: ${p.username}\nPasscode: ${passInfo}`;
     navigator.clipboard?.writeText(text).catch(() => {});
     setCopiedId(p.id);
     setTimeout(() => {
@@ -1220,7 +1239,13 @@ export const TeacherPassportView: React.FC<TeacherPassportViewProps> = ({
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span className="text-[11px] font-mono text-slate-600">
-                          {isRevealed ? p.passcode : '••••••••'}
+                          {p.passwordHash
+                            ? isRevealed
+                              ? 'Hashed (SHA-256)'
+                              : '••••••••'
+                            : isRevealed
+                              ? p.passcode
+                              : '••••••••'}
                         </span>
                         <button
                           type="button"
@@ -1557,11 +1582,16 @@ export const TeacherPassportView: React.FC<TeacherPassportViewProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-pink-950 mb-1">
-                  Passcode
+                  New Passcode (optional if keeping existing hash)
                 </label>
                 <input
-                  type="text"
-                  required
+                  type="password"
+                  required={!editingPassport.passwordHash}
+                  placeholder={
+                    editingPassport.passwordHash
+                      ? 'Leave blank to keep hashed password'
+                      : 'Enter new passcode'
+                  }
                   value={editForm.passcode}
                   onChange={(e) =>
                     setEditForm({ ...editForm, passcode: e.target.value })
@@ -1755,7 +1785,9 @@ export const TeacherPassportView: React.FC<TeacherPassportViewProps> = ({
                       Access Passcode
                     </div>
                     <div className="font-mono font-bold text-slate-900">
-                      {cardPreviewPassport.passcode}
+                      {cardPreviewPassport.passwordHash
+                        ? 'Encrypted (Hashed)'
+                        : cardPreviewPassport.passcode}
                     </div>
                   </div>
                   <div>

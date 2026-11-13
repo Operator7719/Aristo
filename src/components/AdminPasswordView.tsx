@@ -19,7 +19,10 @@ import {
   SchoolDatabase,
   UserRole,
 } from '../types';
-import { createDefaultAdminSecurity } from '../data/seedData';
+import {
+  DEFAULT_AUTHORIZED_ADMIN_EMAIL,
+  createDefaultAdminSecurity,
+} from '../data/seedData';
 import {
   createSalt,
   evaluateAdminPassword,
@@ -51,6 +54,9 @@ export const AdminPasswordView: React.FC<AdminPasswordViewProps> = ({
   const currentConfig: AdminSecurityConfig =
     db.admin_security || createDefaultAdminSecurity();
 
+  const [authorizedAdminEmail, setAuthorizedAdminEmail] = useState(
+    currentConfig.authorizedAdminEmail || DEFAULT_AUTHORIZED_ADMIN_EMAIL,
+  );
   const [adminUsername, setAdminUsername] = useState(
     currentConfig.adminUsername || 'admin',
   );
@@ -115,6 +121,18 @@ export const AdminPasswordView: React.FC<AdminPasswordViewProps> = ({
     e.preventDefault();
     if (!isAdmin) return;
 
+    const cleanAuthorizedEmail = authorizedAdminEmail.trim().toLowerCase();
+    if (
+      !cleanAuthorizedEmail ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanAuthorizedEmail)
+    ) {
+      showFeedback(
+        'error',
+        'A valid single Authorized Admin Email is required.',
+      );
+      return;
+    }
+
     if (!adminUsername.trim()) {
       showFeedback('error', 'Admin Username is required.');
       return;
@@ -178,6 +196,8 @@ export const AdminPasswordView: React.FC<AdminPasswordViewProps> = ({
 
       const updated: AdminSecurityConfig = {
         isConfigured: true,
+        authorizedAdminEmail: cleanAuthorizedEmail,
+        strictSingleUserOnly: true,
         adminUsername: adminUsername.trim(),
         adminDisplayName: adminDisplayName.trim() || 'Principal / Exam Admin',
         passwordSalt: nextSalt,
@@ -199,8 +219,8 @@ export const AdminPasswordView: React.FC<AdminPasswordViewProps> = ({
       showFeedback(
         'success',
         currentConfig.isConfigured
-          ? 'Admin Password and security policy updated successfully.'
-          : 'Admin Password created and Admin Portal protection is now active.',
+          ? 'Admin Password and single-user security policy updated successfully.'
+          : 'Admin Password created and single-user Admin Portal protection is now active.',
       );
       return;
     }
@@ -212,6 +232,8 @@ export const AdminPasswordView: React.FC<AdminPasswordViewProps> = ({
 
     onUpdateAdminSecurity({
       ...currentConfig,
+      authorizedAdminEmail: cleanAuthorizedEmail,
+      strictSingleUserOnly: true,
       adminUsername: adminUsername.trim(),
       adminDisplayName: adminDisplayName.trim() || 'Principal / Exam Admin',
       recoveryQuestion: recoveryQuestion.trim() || currentConfig.recoveryQuestion,
@@ -249,6 +271,10 @@ export const AdminPasswordView: React.FC<AdminPasswordViewProps> = ({
 
     onUpdateAdminSecurity({
       ...createDefaultAdminSecurity(),
+      authorizedAdminEmail:
+        authorizedAdminEmail.trim().toLowerCase() ||
+        DEFAULT_AUTHORIZED_ADMIN_EMAIL,
+      strictSingleUserOnly: true,
       adminUsername: adminUsername.trim() || 'admin',
       adminDisplayName: adminDisplayName.trim() || 'Principal / Exam Admin',
       updatedDate: new Date().toISOString().slice(0, 10),
@@ -393,8 +419,8 @@ export const AdminPasswordView: React.FC<AdminPasswordViewProps> = ({
           >
             {currentConfig.isConfigured ? 'Password Active' : 'Not Configured'}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
-            Admin ID: <span className="font-mono">{currentConfig.adminUsername}</span>
+          <div className="text-[11px] text-slate-500 mt-1 truncate">
+            Only: <span className="font-mono">{currentConfig.authorizedAdminEmail || DEFAULT_AUTHORIZED_ADMIN_EMAIL}</span>
           </div>
         </div>
 
@@ -466,6 +492,28 @@ export const AdminPasswordView: React.FC<AdminPasswordViewProps> = ({
               <RefreshCw className="w-3.5 h-3.5" />
               Auto-Generate
             </button>
+          </div>
+
+          <div className="bg-indigo-50/70 border border-indigo-200 rounded-lg p-3.5 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-xs font-bold text-indigo-950">
+                Single Authorized Admin Email (Exclusive Access)
+              </label>
+              <span className="text-[11px] font-semibold text-indigo-700">
+                1 User Only
+              </span>
+            </div>
+            <input
+              type="email"
+              required
+              value={authorizedAdminEmail}
+              onChange={(e) => setAuthorizedAdminEmail(e.target.value)}
+              placeholder="nirmaldahit@gmail.com"
+              className="w-full px-3 py-2 text-xs font-mono border border-indigo-200 rounded-lg bg-white focus:outline-none focus:border-indigo-500"
+            />
+            <p className="text-[11px] text-indigo-900">
+              Only this single email address can open or unlock the Admin Panel. Other users and other email addresses are strictly blocked.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">

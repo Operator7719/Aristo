@@ -132,6 +132,10 @@ export interface TeacherPassport {
   passportTitle: string;
   username: string;
   passcode: string;
+  passwordHash?: string;
+  passwordSalt?: string;
+  passwordUpdatedDate?: string;
+  passwordUpdatedBy?: string;
   assignedTeacherId: string | null;
   issuedDate: string;
   expiryDate: string;
@@ -177,6 +181,8 @@ export interface AdminPasswordRequirements {
 
 export interface AdminSecurityConfig {
   isConfigured: boolean;
+  authorizedAdminEmail: string;
+  strictSingleUserOnly?: boolean;
   adminUsername: string;
   adminDisplayName: string;
   passwordHash: string;

@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import {
+  DEFAULT_AUTHORIZED_ADMIN_EMAIL,
   createDefaultAdminSecurity,
   createSeedDatabase,
   ensureDefaultExams,
@@ -11,9 +12,12 @@ import {
   ensureTeacherRegistryAndAssignments,
 } from './src/data/seedData.ts';
 import {
+  DEFAULT_PASSWORD_REQUIREMENTS,
   createSalt,
   evaluateAdminPassword,
   hashSecret,
+  hashTeacherPasscode,
+  verifyTeacherPassportSecret,
 } from './src/utils/passwordSecurity.ts';
 import type {
   AdminPasswordRequirements,
@@ -84,8 +88,8 @@ function validatePassportPayload(
   if (!item.username?.trim()) {
     return { error: 'Username is required.', status: 400 };
   }
-  if (!item.passcode?.trim()) {
-    return { error: 'Passcode is required.', status: 400 };
+  if (!item.passcode?.trim() && !(item.passwordHash && item.passwordSalt)) {
+    return { error: 'Passcode or password hash is required.', status: 400 };
   }
   if (item.assignedTeacherId) {
     const teacherExists = db.teachers.some((t) => t.id === item.assignedTeacherId);
@@ -251,12 +255,15 @@ function saveDb(db: SchoolDatabase): void {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
+  const sanitizedPassports = deduplicatePassports(
+    db.teacher_passports || [],
+  ).map((p) => (p.passwordHash && p.passwordSalt ? { ...p, passcode: '' } : p));
   const normalized: SchoolDatabase = {
     ...db,
     teacher_subject_assignments: deduplicateAssignments(
       db.teacher_subject_assignments || [],
     ),
-    teacher_passports: deduplicatePassports(db.teacher_passports || []),
+    teacher_passports: sanitizedPassports,
   };
   fs.writeFileSync(DB_FILE, JSON.stringify(normalized, null, 2), 'utf-8');
   syncAssignmentsTable(normalized.teacher_subject_assignments);
@@ -578,7 +585,7 @@ async function startServer() {
       (p) =>
         (p.passportNumber.trim().toLowerCase() === normId ||
           p.username.trim().toLowerCase() === normId) &&
-        p.passcode === rawPass,
+        verifyTeacherPassportSecret(p, rawPass),
     );
     if (!passport) {
       res.status(401).json({ error: 'Invalid teacher passport credentials.' });
@@ -614,6 +621,9 @@ async function startServer() {
     const db = ensureDb();
     const current = db.admin_security || createDefaultAdminSecurity();
     const {
+      currentEmail,
+      authorizedAdminEmail,
+      authorizedAdminSession,
       currentPassword,
       adminUsername,
       adminDisplayName,
@@ -626,6 +636,9 @@ async function startServer() {
       maxFailedAttempts,
       requirements,
     } = req.body as {
+      currentEmail?: string;
+      authorizedAdminEmail?: string;
+      authorizedAdminSession?: boolean;
       currentPassword?: string;
       adminUsername?: string;
       adminDisplayName?: string;
@@ -639,7 +652,20 @@ async function startServer() {
       requirements?: AdminPasswordRequirements;
     };
 
-    if (current.isConfigured) {
+    const expectedEmail = (
+      current.authorizedAdminEmail || DEFAULT_AUTHORIZED_ADMIN_EMAIL
+    )
+      .trim()
+      .toLowerCase();
+    if (!currentEmail || currentEmail.trim().toLowerCase() !== expectedEmail) {
+      res.status(403).json({
+        error:
+          'Access Denied: Only the authorized Admin user can create or change passwords.',
+      });
+      return;
+    }
+
+    if (current.isConfigured && !authorizedAdminSession) {
       if (!currentPassword) {
         res
           .status(401)
@@ -673,17 +699,27 @@ async function startServer() {
     const cleanRecoveryAns = (recoveryAnswer || '').trim().toLowerCase();
     const nextRecoveryHash = cleanRecoveryAns
       ? hashSecret(cleanRecoveryAns, salt)
-      : current.recoveryAnswerHash;
+      : current.recoveryAnswerHash || '';
 
-    if (!current.isConfigured && !cleanRecoveryAns) {
+    if (!current.isConfigured && !cleanRecoveryAns && !authorizedAdminSession) {
       res.status(400).json({
         error: 'Please set a Recovery Answer so Admin access can be recovered if needed.',
       });
       return;
     }
 
+    const nextAuthorizedEmail = (
+      authorizedAdminEmail ||
+      current.authorizedAdminEmail ||
+      DEFAULT_AUTHORIZED_ADMIN_EMAIL
+    )
+      .trim()
+      .toLowerCase();
+
     const nextConfig: AdminSecurityConfig = {
       isConfigured: true,
+      authorizedAdminEmail: nextAuthorizedEmail,
+      strictSingleUserOnly: true,
       adminUsername: (adminUsername || current.adminUsername || 'admin').trim(),
       adminDisplayName: (
         adminDisplayName ||
@@ -714,10 +750,161 @@ async function startServer() {
     res.json({ ok: true, admin_security: nextConfig });
   });
 
+  app.post('/api/teacher-password/setup', (req, res) => {
+    const db = ensureDb();
+    const sec = db.admin_security || createDefaultAdminSecurity();
+    const {
+      currentEmail,
+      teacherId,
+      passportId,
+      newPassword,
+      confirmPassword,
+    } = req.body as {
+      currentEmail?: string;
+      teacherId?: string;
+      passportId?: string;
+      newPassword?: string;
+      confirmPassword?: string;
+    };
+
+    const expectedEmail = (
+      sec.authorizedAdminEmail || DEFAULT_AUTHORIZED_ADMIN_EMAIL
+    )
+      .trim()
+      .toLowerCase();
+    if (!currentEmail || currentEmail.trim().toLowerCase() !== expectedEmail) {
+      res.status(403).json({
+        error:
+          'Access Denied: Only the authorized Admin user can create or change Teacher passwords.',
+      });
+      return;
+    }
+
+    const evaluation = evaluateAdminPassword(
+      newPassword || '',
+      confirmPassword || '',
+      DEFAULT_PASSWORD_REQUIREMENTS,
+    );
+    if (!evaluation.allRequirementsMet) {
+      res.status(400).json({
+        error:
+          'New Teacher Password does not satisfy strength requirements or passwords do not match.',
+      });
+      return;
+    }
+
+    const passports = [...(db.teacher_passports || [])];
+    const targetPassport = passports.find(
+      (p) =>
+        (passportId && p.id === passportId) ||
+        (teacherId && p.assignedTeacherId === teacherId && p.status === 'active'),
+    );
+
+    const today = new Date().toISOString().slice(0, 10);
+    const { passwordSalt, passwordHash } = hashTeacherPasscode(newPassword || '');
+    let updatedPassport: TeacherPassport | undefined;
+    let nextPassports = passports;
+
+    if (targetPassport) {
+      nextPassports = passports.map((p) => {
+        if (p.id === targetPassport.id) {
+          updatedPassport = {
+            ...p,
+            passcode: '',
+            passwordSalt,
+            passwordHash,
+            passwordUpdatedDate: today,
+            passwordUpdatedBy: 'Admin',
+          };
+          return updatedPassport;
+        }
+        return p;
+      });
+    } else if (teacherId) {
+      const teacher = db.teachers.find((t) => t.id === teacherId);
+      if (!teacher) {
+        res.status(404).json({ error: 'Selected teacher account was not found.' });
+        return;
+      }
+      const cleanBase =
+        teacher.name
+          .toLowerCase()
+          .replace(/[^a-z\s]/g, '')
+          .trim()
+          .split(/\s+/)
+          .slice(0, 2)
+          .join('.') || teacher.teacherCode.toLowerCase();
+      const usedUsernames = new Set(passports.map((p) => p.username.toLowerCase()));
+      let username = cleanBase;
+      let idx = 2;
+      while (usedUsernames.has(username)) {
+        username = `${cleanBase}${idx}`;
+        idx += 1;
+      }
+      const yrDigits =
+        (db.settings.academicYear || '2082').replace(/[^0-9]/g, '') || '2082';
+      let seq = passports.length + 1;
+      let passportNumber = `ARISTO-PP-${yrDigits}-${String(seq).padStart(3, '0')}`;
+      const usedNumbers = new Set(
+        passports.map((p) => p.passportNumber.toLowerCase()),
+      );
+      while (usedNumbers.has(passportNumber.toLowerCase())) {
+        seq += 1;
+        passportNumber = `ARISTO-PP-${yrDigits}-${String(seq).padStart(3, '0')}`;
+      }
+      updatedPassport = {
+        id: `pp-${Date.now()}`,
+        passportNumber,
+        passportTitle: 'Teacher Portal Credential',
+        username,
+        passcode: '',
+        passwordSalt,
+        passwordHash,
+        passwordUpdatedDate: today,
+        passwordUpdatedBy: 'Admin',
+        assignedTeacherId: teacher.id,
+        issuedDate: today,
+        expiryDate: '2084-12-30',
+        status: 'active',
+        notes: 'Created from Admin Teacher Password manager',
+        createdBy: 'Admin',
+        createdDate: today,
+        assignedDate: today,
+      };
+      nextPassports = [updatedPassport, ...passports];
+    } else {
+      res.status(400).json({ error: 'Please select a Teacher account.' });
+      return;
+    }
+
+    db.teacher_passports = nextPassports;
+    saveDb(db);
+    res.json({
+      ok: true,
+      teacher_passports: db.teacher_passports,
+      updatedPassport,
+    });
+  });
+
   app.post('/api/admin-security/verify', (req, res) => {
     const db = ensureDb();
     const sec = db.admin_security || createDefaultAdminSecurity();
-    const { password } = req.body as { password?: string };
+    const { email, password } = req.body as {
+      email?: string;
+      password?: string;
+    };
+    const expectedEmail = (
+      sec.authorizedAdminEmail || DEFAULT_AUTHORIZED_ADMIN_EMAIL
+    )
+      .trim()
+      .toLowerCase();
+    if (!email || email.trim().toLowerCase() !== expectedEmail) {
+      res.status(403).json({
+        error:
+          'Access Denied: Admin Panel is restricted to one authorized user only. Other users or email addresses cannot access the Admin Panel.',
+      });
+      return;
+    }
     if (!sec.isConfigured) {
       res.json({ ok: true, configured: false });
       return;
@@ -735,11 +922,24 @@ async function startServer() {
   app.post('/api/admin-security/recover', (req, res) => {
     const db = ensureDb();
     const current = db.admin_security || createDefaultAdminSecurity();
-    const { recoveryAnswer, newPassword, confirmPassword } = req.body as {
+    const { email, recoveryAnswer, newPassword, confirmPassword } = req.body as {
+      email?: string;
       recoveryAnswer?: string;
       newPassword?: string;
       confirmPassword?: string;
     };
+    const expectedEmail = (
+      current.authorizedAdminEmail || DEFAULT_AUTHORIZED_ADMIN_EMAIL
+    )
+      .trim()
+      .toLowerCase();
+    if (!email || email.trim().toLowerCase() !== expectedEmail) {
+      res.status(403).json({
+        error:
+          'Access Denied: Only the single authorized administrator email can recover Admin Panel access.',
+      });
+      return;
+    }
     if (!current.isConfigured || !current.recoveryAnswerHash) {
       res
         .status(400)
@@ -765,6 +965,8 @@ async function startServer() {
     const newSalt = createSalt();
     const updated: AdminSecurityConfig = {
       ...current,
+      authorizedAdminEmail: expectedEmail,
+      strictSingleUserOnly: true,
       passwordSalt: newSalt,
       passwordHash: hashSecret(newPassword || '', newSalt),
       recoveryAnswerHash: hashSecret(cleanAns, newSalt),

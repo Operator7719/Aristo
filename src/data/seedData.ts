@@ -12,6 +12,7 @@ import {
   TeacherPassport,
   TeacherSubjectAssignment,
 } from '../types';
+import { hashTeacherPasscode } from '../utils/passwordSecurity';
 
 export const DEFAULT_ACADEMIC_YEARS = ['2081 B.S', '2082 B.S', '2083 B.S'];
 
@@ -325,7 +326,7 @@ export function createDefaultTeacherAssignments(): TeacherSubjectAssignment[] {
 }
 
 export function createDefaultTeacherPassports(): TeacherPassport[] {
-  return [
+  const defaults: TeacherPassport[] = [
     {
       id: 'pp-2082-001',
       passportNumber: 'ARISTO-PP-2082-001',
@@ -445,11 +446,26 @@ export function createDefaultTeacherPassports(): TeacherPassport[] {
       createdDate: '2082-01-15',
     },
   ];
+  return defaults.map((p) => {
+    const { passwordSalt, passwordHash } = hashTeacherPasscode(p.passcode);
+    return {
+      ...p,
+      passcode: '',
+      passwordSalt,
+      passwordHash,
+      passwordUpdatedDate: p.createdDate,
+      passwordUpdatedBy: p.createdBy,
+    };
+  });
 }
+
+export const DEFAULT_AUTHORIZED_ADMIN_EMAIL = 'nirmaldahit@gmail.com';
 
 export function createDefaultAdminSecurity(): AdminSecurityConfig {
   return {
     isConfigured: false,
+    authorizedAdminEmail: DEFAULT_AUTHORIZED_ADMIN_EMAIL,
+    strictSingleUserOnly: true,
     adminUsername: 'admin',
     adminDisplayName: 'Principal / Exam Admin',
     passwordHash: '',
@@ -1055,18 +1071,47 @@ export function ensureTeacherRegistryAndAssignments(
     changed = true;
   }
 
-  const teacher_passports = Array.isArray(db.teacher_passports)
+  const rawPassports = Array.isArray(db.teacher_passports)
     ? db.teacher_passports
     : createDefaultTeacherPassports();
   if (!Array.isArray(db.teacher_passports)) {
     changed = true;
   }
 
-  const admin_security =
-    db.admin_security && typeof db.admin_security === 'object'
-      ? db.admin_security
+  const teacher_passports = rawPassports.map((p) => {
+    if (p.passcode && (!p.passwordHash || !p.passwordSalt)) {
+      const { passwordSalt, passwordHash } = hashTeacherPasscode(p.passcode);
+      changed = true;
+      return {
+        ...p,
+        passcode: '',
+        passwordSalt,
+        passwordHash,
+      };
+    }
+    if (p.passcode && p.passwordHash && p.passwordSalt) {
+      changed = true;
+      return { ...p, passcode: '' };
+    }
+    return p;
+  });
+
+  const rawSec = db.admin_security;
+  const admin_security: AdminSecurityConfig =
+    rawSec && typeof rawSec === 'object'
+      ? {
+          ...rawSec,
+          authorizedAdminEmail:
+            rawSec.authorizedAdminEmail?.trim().toLowerCase() ||
+            DEFAULT_AUTHORIZED_ADMIN_EMAIL,
+          strictSingleUserOnly: rawSec.strictSingleUserOnly ?? true,
+        }
       : createDefaultAdminSecurity();
-  if (!db.admin_security) {
+  if (
+    !rawSec ||
+    !rawSec.authorizedAdminEmail ||
+    rawSec.strictSingleUserOnly === undefined
+  ) {
     changed = true;
   }
 

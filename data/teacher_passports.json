@@ -4,7 +4,7 @@
     "passportNumber": "ARISTO-PP-2082-001",
     "passportTitle": "Class Teacher Passport",
     "username": "ram.joshi",
-    "passcode": "Aristo@001",
+    "passcode": "",
     "assignedTeacherId": "tch-1",
     "issuedDate": "2082-01-10",
     "expiryDate": "2083-12-30",
@@ -12,6 +12,8 @@
     "notes": "Grade 9A Class Teacher & Mathematics access credential",
     "createdBy": "Admin",
     "createdDate": "2082-01-10",
-    "assignedDate": "2082-01-10"
+    "assignedDate": "2082-01-10",
+    "passwordSalt": "mwenmi4q-wbwkgzqe",
+    "passwordHash": "cbd81f5bf72cde56303a3a6c3b79df788284d35cc0809111584b1565ece7e9df"
   }
 ]
