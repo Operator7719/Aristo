@@ -3,7 +3,6 @@ import {
   ArrowRight,
   BookOpen,
   ClipboardCheck,
-  CreditCard,
   Edit3,
   Layers,
   Lock,
@@ -112,42 +111,21 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
     );
   }, [db.exams, selectedYear]);
 
-  const assignedPassport = useMemo(() => {
-    if (passport) return passport;
-    return (
-      (db.teacher_passports || []).find(
-        (p) => p.assignedTeacherId === teacher.id && p.status === 'active',
-      ) || null
-    );
-  }, [passport, db.teacher_passports, teacher.id]);
-
   return (
     <div className="space-y-5">
-      {/* Pink & White Teacher Profile Header */}
+      {/* Pink & White Teacher Workspace Header */}
       <div className="bg-white border border-pink-200 rounded-xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2 text-xs text-pink-800 font-semibold mb-1">
             <span>Teacher Portal</span>
             <span aria-hidden="true">·</span>
-            <span className="font-mono">{teacher.teacherCode}</span>
-            <span aria-hidden="true">·</span>
-            <span>{teacher.qualification}</span>
-            {assignedPassport && (
-              <>
-                <span aria-hidden="true">·</span>
-                <span className="inline-flex items-center gap-1 font-mono text-pink-900">
-                  <CreditCard className="w-3.5 h-3.5 text-pink-700" />
-                  {assignedPassport.passportNumber}
-                </span>
-              </>
-            )}
+            <span>Assigned Workspace</span>
           </div>
-          <h2 className="text-xl font-bold text-slate-900">{teacher.name}</h2>
+          <h2 className="text-xl font-bold text-slate-900">
+            My Assigned Subjects &amp; Classes
+          </h2>
           <p className="text-xs text-slate-600 mt-0.5">
-            Specialization: {teacher.specialization} · Subjects and classes shown below are centrally assigned by School Admin.
-            {assignedPassport
-              ? ` · Passport valid ${assignedPassport.issuedDate} to ${assignedPassport.expiryDate}.`
-              : ''}
+            Subjects and classes shown below are centrally assigned by School Admin.
           </p>
         </div>
 

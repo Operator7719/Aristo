@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Check, RotateCcw, Save } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { AlertTriangle, Check, RotateCcw, Save } from 'lucide-react';
 import {
   ActiveStatus,
   Exam,
@@ -9,9 +9,17 @@ import {
   SchoolSettings,
 } from '../types';
 
+export interface SaveResult {
+  ok: boolean;
+  mode: 'server' | 'local';
+}
+
 interface SettingsViewProps {
   db: SchoolDatabase;
-  onSaveSettingsAndExams: (settings: SchoolSettings, exams: Exam[]) => void;
+  onSaveSettingsAndExams: (
+    settings: SchoolSettings,
+    exams: Exam[],
+  ) => Promise<SaveResult> | SaveResult | void;
   onResetDemo: () => void;
 }
 
@@ -27,54 +35,62 @@ const TERM_OPTIONS: {
   { term: 'annual', label: 'Annual Examination', fallbackDate: '2082-12-30', fallbackDays: 210 },
 ];
 
+const buildInitialForm = (db: SchoolDatabase): SchoolSettings => {
+  const base: SchoolSettings = JSON.parse(JSON.stringify(db.settings));
+  base.examIssueDates = {
+    first:
+      db.exams.find((e) => e.term === 'first')?.dateOfIssue ||
+      base.examIssueDates?.first ||
+      '2082-04-20',
+    second:
+      db.exams.find((e) => e.term === 'second')?.dateOfIssue ||
+      base.examIssueDates?.second ||
+      '2082-08-15',
+    third:
+      db.exams.find((e) => e.term === 'third')?.dateOfIssue ||
+      base.examIssueDates?.third ||
+      '2082-12-25',
+    annual:
+      db.exams.find((e) => e.term === 'annual')?.dateOfIssue ||
+      base.examIssueDates?.annual ||
+      '2082-12-30',
+  };
+  base.examWorkingDays = {
+    first:
+      db.exams.find((e) => e.term === 'first')?.workingDays ||
+      base.examWorkingDays?.first ||
+      68,
+    second:
+      db.exams.find((e) => e.term === 'second')?.workingDays ||
+      base.examWorkingDays?.second ||
+      72,
+    third:
+      db.exams.find((e) => e.term === 'third')?.workingDays ||
+      base.examWorkingDays?.third ||
+      80,
+    annual:
+      db.exams.find((e) => e.term === 'annual')?.workingDays ||
+      base.examWorkingDays?.annual ||
+      210,
+  };
+  return base;
+};
+
 export const SettingsView: React.FC<SettingsViewProps> = ({
   db,
   onSaveSettingsAndExams,
   onResetDemo,
 }) => {
-  const [form, setForm] = useState<SchoolSettings>(() => {
-    const base: SchoolSettings = JSON.parse(JSON.stringify(db.settings));
-    base.examIssueDates = {
-      first:
-        db.exams.find((e) => e.term === 'first')?.dateOfIssue ||
-        base.examIssueDates?.first ||
-        '2082-04-20',
-      second:
-        db.exams.find((e) => e.term === 'second')?.dateOfIssue ||
-        base.examIssueDates?.second ||
-        '2082-08-15',
-      third:
-        db.exams.find((e) => e.term === 'third')?.dateOfIssue ||
-        base.examIssueDates?.third ||
-        '2082-12-25',
-      annual:
-        db.exams.find((e) => e.term === 'annual')?.dateOfIssue ||
-        base.examIssueDates?.annual ||
-        '2082-12-30',
-    };
-    base.examWorkingDays = {
-      first:
-        db.exams.find((e) => e.term === 'first')?.workingDays ||
-        base.examWorkingDays?.first ||
-        68,
-      second:
-        db.exams.find((e) => e.term === 'second')?.workingDays ||
-        base.examWorkingDays?.second ||
-        72,
-      third:
-        db.exams.find((e) => e.term === 'third')?.workingDays ||
-        base.examWorkingDays?.third ||
-        80,
-      annual:
-        db.exams.find((e) => e.term === 'annual')?.workingDays ||
-        base.examWorkingDays?.annual ||
-        210,
-    };
-    return base;
-  });
-
-  const [saved, setSaved] = useState(false);
+  const [form, setForm] = useState<SchoolSettings>(() => buildInitialForm(db));
+  const [syncExamYear, setSyncExamYear] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+
+  useEffect(() => {
+    setForm(buildInitialForm(db));
+  }, [db.settings, db.exams]);
 
   const updateRule = (
     idx: number,
@@ -110,28 +126,73 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     }));
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const issueMap = form.examIssueDates || {};
-    const daysMap = form.examWorkingDays || {};
+    setSaveError(null);
+    setSaveMessage(null);
+
+    if (!form.schoolName.trim()) {
+      setSaveError('School Name cannot be empty.');
+      return;
+    }
+    if (!form.iemisCode.trim()) {
+      setSaveError('School IEMIS Code cannot be empty.');
+      return;
+    }
+    if (!form.academicYear.trim()) {
+      setSaveError('Academic Year cannot be empty.');
+      return;
+    }
+    if (form.email && form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setSaveError('Please enter a valid School Email address or leave it blank.');
+      return;
+    }
+
+    const cleanedForm: SchoolSettings = {
+      ...form,
+      schoolName: form.schoolName.trim(),
+      address: form.address.trim(),
+      iemisCode: form.iemisCode.trim(),
+      estd: form.estd.trim(),
+      phone: form.phone?.trim() || '',
+      email: form.email?.trim() || '',
+      academicYear: form.academicYear.trim(),
+      dateOfIssue: form.dateOfIssue.trim(),
+    };
+
+    const issueMap = cleanedForm.examIssueDates || {};
+    const daysMap = cleanedForm.examWorkingDays || {};
     const updatedExams: Exam[] = db.exams.map((ex) => ({
       ...ex,
+      academicYear: syncExamYear ? cleanedForm.academicYear : ex.academicYear,
       dateOfIssue: issueMap[ex.term] ?? ex.dateOfIssue,
       workingDays:
         daysMap[ex.term] && daysMap[ex.term]! > 0
           ? daysMap[ex.term]!
           : ex.workingDays,
     }));
-    onSaveSettingsAndExams(form, updatedExams);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+
+    setIsSaving(true);
+    try {
+      const result = await onSaveSettingsAndExams(cleanedForm, updatedExams);
+      const msg =
+        result && result.mode === 'local'
+          ? 'Settings saved locally (browser storage).'
+          : 'Settings saved and applied across examinations & reports.';
+      setSaveMessage(msg);
+      setTimeout(() => setSaveMessage(null), 4000);
+    } catch {
+      setSaveError('Failed to save settings. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSave} className="space-y-6">
+    <form onSubmit={handleSave} noValidate className="space-y-6">
       {/* School Profile & Status */}
       <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-3">
           <div>
             <h2 className="text-base font-semibold text-slate-900">
               School Details & Configuration
@@ -140,13 +201,30 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               Appears on printed Grade Sheets, Markwise Ledgers, and PDF exports.
             </p>
           </div>
-          {saved && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
-              <Check className="w-4 h-4" />
-              Settings saved
-            </span>
-          )}
+          <div className="flex flex-wrap items-center gap-3">
+            {saveMessage && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
+                <Check className="w-4 h-4" />
+                {saveMessage}
+              </span>
+            )}
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-700 text-white text-xs font-semibold rounded-lg hover:bg-indigo-800 disabled:opacity-50 whitespace-nowrap"
+            >
+              <Save className="w-3.5 h-3.5" />
+              {isSaving ? 'Saving...' : 'Save Settings'}
+            </button>
+          </div>
         </div>
+
+        {saveError && (
+          <div className="bg-rose-50 border border-rose-200 text-rose-900 text-xs font-medium rounded-lg px-3.5 py-2.5 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{saveError}</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="md:col-span-2">
@@ -229,6 +307,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               }
               className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg font-mono"
             />
+            <label className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={syncExamYear}
+                onChange={(e) => setSyncExamYear(e.target.checked)}
+                className="w-3.5 h-3.5 rounded border-slate-300 text-indigo-700"
+              />
+              <span>Apply this Academic Year to all examinations on save</span>
+            </label>
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1">
@@ -509,13 +596,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           )}
         </div>
 
-        <button
-          type="submit"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-700 text-white text-sm font-medium rounded-lg hover:bg-indigo-800"
-        >
-          <Save className="w-4 h-4" />
-          Save Settings
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {saveMessage && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
+              <Check className="w-4 h-4" />
+              {saveMessage}
+            </span>
+          )}
+          <button
+            type="submit"
+            disabled={isSaving}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-700 text-white text-sm font-medium rounded-lg hover:bg-indigo-800 disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            {isSaving ? 'Saving...' : 'Save Settings'}
+          </button>
+        </div>
       </div>
     </form>
   );

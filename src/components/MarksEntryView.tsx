@@ -655,9 +655,7 @@ export const MarksEntryView: React.FC<MarksEntryViewProps> = ({
       {isTeacherMode && (
         <div className="bg-white border border-pink-200 rounded-lg px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs text-pink-950">
           <div>
-            <span className="font-bold">
-              Teacher Access ({activeTeacher?.name}):
-            </span>{' '}
+            <span className="font-bold">Teacher Access:</span>{' '}
             Showing only your Admin-assigned subjects ({academicClassSubjects.length}) for {selectedClass?.name || '—'} Section {sectionName}.
             {!canEditAttendance &&
               ' Attendance is read-only (editable by Class Teacher or Admin).'}

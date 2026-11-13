@@ -7,6 +7,7 @@ import {
   FileText,
   GraduationCap,
   Layers,
+  Trophy,
   Users,
 } from 'lucide-react';
 import { NavPage, SchoolDatabase } from '../types';
@@ -244,7 +245,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ db, onNavigate }) 
               {selectedExam?.name} · Automatic conversion & GPA status
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onNavigate('top-ten', { examId: selectedExamId })}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors whitespace-nowrap"
+            >
+              <Trophy className="w-3.5 h-3.5" />
+              Top 10 Students
+            </button>
             <button
               type="button"
               onClick={() => onNavigate('markwise-ledger', { examId: selectedExamId })}

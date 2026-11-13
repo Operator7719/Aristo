@@ -794,6 +794,7 @@ export function downloadMarkwiseLedgerPDF(
     'Total',
     '%',
     'GPA',
+    'Present\nDays',
     'Rank',
     'Result',
   ];
@@ -814,6 +815,7 @@ export function downloadMarkwiseLedgerPDF(
       r.hasAnyMarks ? `${r.grandTotalObtained}/${r.grandTotalFullMarks}` : '-',
       r.hasAnyMarks ? `${r.percentage.toFixed(1)}%` : '-',
       r.hasAnyMarks ? r.gpa.toFixed(2) : '-',
+      r.markRecord ? `${r.presentDays}/${r.workingDays}` : '-',
       r.rank ? String(r.rank) : '-',
       r.hasAnyMarks ? (r.isPassed ? 'PASS' : 'NG') : 'Pending',
     ];
@@ -910,6 +912,7 @@ export function downloadGradewiseLedgerPDF(
     ...displaySubjects.map((s) =>
       isGradeOnlySubject(s) ? `${s.code}\n(Grade)` : `${s.code}\n(TH/PR/Fin)`,
     ),
+    'Present\nDays',
     'GPA',
     'Overall Grade',
     'Remarks',
@@ -930,6 +933,7 @@ export function downloadGradewiseLedgerPDF(
       String(r.student.rollNo),
       r.student.name,
       ...subCells,
+      r.markRecord ? `${r.presentDays}/${r.workingDays}` : '-',
       r.hasAnyMarks ? r.gpa.toFixed(2) : '-',
       r.overallGrade,
       r.overallRemarks,
@@ -1146,5 +1150,152 @@ export function downloadTeacherPassportsPDF(
   });
 
   doc.save('Teacher_Passports_Report.pdf');
+}
+
+export interface TopTenPdfRow {
+  rank: number;
+  rollNo: number;
+  studentName: string;
+  sectionName: string;
+  totalText: string;
+  percentageText: string;
+  gpaText: string;
+  overallGrade: string;
+  presentDaysText: string;
+  resultStatus: string;
+}
+
+export function downloadTopTenPDF(
+  gpaRows: TopTenPdfRow[],
+  percentageRows: TopTenPdfRow[],
+  schoolClass: SchoolClass,
+  sectionLabel: string,
+  exam: Exam,
+  settings: SchoolSettings,
+) {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text(settings.schoolName, pageW / 2, 12, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  doc.text(
+    `${settings.address} | School IEMIS Code: ${settings.iemisCode}`,
+    pageW / 2,
+    17,
+    { align: 'center' },
+  );
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text(
+    `CLASS-WISE TOP TEN STUDENTS — ${exam.name} (${exam.academicYear})`,
+    pageW / 2,
+    23,
+    { align: 'center' },
+  );
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(`${schoolClass.name} | ${sectionLabel}`, pageW / 2, 28, {
+    align: 'center',
+  });
+
+  const columns = [
+    'Rank',
+    'Roll',
+    'Student Name',
+    'Sec',
+    'Total',
+    '%',
+    'GPA',
+    'Grade',
+    'Present Days',
+    'Result',
+  ];
+
+  const toBody = (list: TopTenPdfRow[]) =>
+    list.map((r) => [
+      `#${r.rank}`,
+      String(r.rollNo),
+      r.studentName,
+      r.sectionName,
+      r.totalText,
+      r.percentageText,
+      r.gpaText,
+      r.overallGrade,
+      r.presentDaysText,
+      r.resultStatus,
+    ]);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('1. Top Ten Students (GPA-Wise Merit)', 10, 35);
+
+  autoTable(doc, {
+    startY: 37.5,
+    margin: { left: 10, right: 10 },
+    theme: 'grid',
+    head: [columns],
+    body:
+      gpaRows.length > 0
+        ? toBody(gpaRows)
+        : [['-', '-', 'No evaluated students found', '-', '-', '-', '-', '-', '-', '-']],
+    styles: {
+      fontSize: 8,
+      cellPadding: 1.8,
+      halign: 'center',
+      valign: 'middle',
+      lineColor: [203, 213, 225],
+      lineWidth: 0.2,
+    },
+    headStyles: {
+      fillColor: [67, 56, 202],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+    },
+    columnStyles: {
+      2: { halign: 'left', cellWidth: 44 },
+    },
+  });
+
+  const nextY =
+    (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
+      .finalY + 9;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('2. Top Ten Students (Percentage-Wise Merit)', 10, nextY);
+
+  autoTable(doc, {
+    startY: nextY + 2.5,
+    margin: { left: 10, right: 10 },
+    theme: 'grid',
+    head: [columns],
+    body:
+      percentageRows.length > 0
+        ? toBody(percentageRows)
+        : [['-', '-', 'No evaluated students found', '-', '-', '-', '-', '-', '-', '-']],
+    styles: {
+      fontSize: 8,
+      cellPadding: 1.8,
+      halign: 'center',
+      valign: 'middle',
+      lineColor: [203, 213, 225],
+      lineWidth: 0.2,
+    },
+    headStyles: {
+      fillColor: [30, 41, 59],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+    },
+    columnStyles: {
+      2: { halign: 'left', cellWidth: 44 },
+    },
+  });
+
+  const safeClass = schoolClass.name.replace(/\s+/g, '_');
+  const safeSec = sectionLabel.replace(/\s+/g, '_');
+  doc.save(`Top_10_${safeClass}_${safeSec}_${exam.term}.pdf`);
 }
 

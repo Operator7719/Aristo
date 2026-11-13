@@ -19,6 +19,7 @@ import {
   Menu,
   Settings,
   ShieldCheck,
+  Trophy,
   UserCheck,
   Users,
   X,
@@ -56,6 +57,7 @@ import { ExamManagementView } from './components/ExamManagementView';
 import { MarksEntryView } from './components/MarksEntryView';
 import { MarkwiseLedgerView } from './components/MarkwiseLedgerView';
 import { GradewiseLedgerView } from './components/GradewiseLedgerView';
+import { TopTenStudentsView } from './components/TopTenStudentsView';
 import { GradeSheetView } from './components/GradeSheetView';
 import { ExcelIOView } from './components/ExcelIOView';
 import { SettingsView } from './components/SettingsView';
@@ -114,6 +116,7 @@ const ADMIN_NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'markwise-ledger', label: 'Markwise Ledger', icon: FileText },
       { id: 'gradewise-ledger', label: 'Gradewise Ledger', icon: Award },
+      { id: 'top-ten', label: 'Top 10 Students', icon: Trophy },
       { id: 'grade-sheet', label: 'Grade Sheet (PDF)', icon: GraduationCap },
     ],
   },
@@ -150,6 +153,7 @@ const PAGE_TITLES: Record<NavPage, string> = {
   'marks-entry': 'Marks Entry & Attendance',
   'markwise-ledger': 'Markwise Ledger',
   'gradewise-ledger': 'Gradewise Ledger',
+  'top-ten': 'Class-Wise Top 10 Students',
   'grade-sheet': 'Printable Grade Sheet',
   'excel-io': 'Excel Import & Export',
   settings: 'System Settings',
@@ -272,20 +276,28 @@ export default function App() {
     return () => clearInterval(timer);
   }, [lockoutUntilMs]);
 
-  const persistDb = (nextDb: SchoolDatabase) => {
+  const persistDb = async (
+    nextDb: SchoolDatabase,
+  ): Promise<{ ok: boolean; mode: 'server' | 'local' }> => {
     setDb(nextDb);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(nextDb));
     } catch {
       // ignore storage quota errors
     }
-    fetch('/api/state', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nextDb),
-    }).catch(() => {
+    try {
+      const res = await fetch('/api/state', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nextDb),
+      });
+      if (res.ok) {
+        return { ok: true, mode: 'server' };
+      }
+    } catch {
       // ignore network offline errors; localStorage retains state
-    });
+    }
+    return { ok: true, mode: 'local' };
   };
 
   const navigate = (
@@ -534,10 +546,6 @@ export default function App() {
           .map((a) => ({ classId: a.classId, sectionId: a.sectionId }))
       : undefined;
 
-  const activeAssignedPassports = (db.teacher_passports || []).filter(
-    (p) => p.status === 'active' && Boolean(p.assignedTeacherId),
-  );
-
   const signOutToPortalEntry = (
     nextOption: 'select' | 'teacher' | 'admin' = 'select',
   ) => {
@@ -648,11 +656,8 @@ export default function App() {
         <div className="space-y-1.5">
           {activeTeacher && activePassport ? (
             <div className="bg-white border border-pink-200 rounded-lg p-2.5 space-y-1.5">
-              <div className="text-xs font-semibold text-slate-900 truncate">
-                {activeTeacher.name}
-              </div>
-              <div className="text-[10px] font-mono text-pink-700 truncate">
-                {activePassport.passportNumber}
+              <div className="text-xs font-semibold text-pink-900">
+                Teacher Session Active
               </div>
               <button
                 type="button"
@@ -660,12 +665,12 @@ export default function App() {
                 className="w-full inline-flex items-center justify-center gap-1 px-2 py-1 text-[11px] font-semibold text-pink-800 bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded"
               >
                 <LogOut className="w-3 h-3" />
-                Switch Passport
+                Switch Teacher Login
               </button>
             </div>
           ) : (
             <div className="text-[11px] text-pink-900 bg-white border border-pink-200 rounded-lg p-2">
-              Sign in with your Admin-issued Teacher Passport to unlock Teacher Workspace.
+              Sign in with your Teacher Passport to unlock Teacher Workspace.
             </div>
           )}
         </div>
@@ -970,7 +975,7 @@ export default function App() {
                       type="text"
                       value={passportLoginId}
                       onChange={(e) => setPassportLoginId(e.target.value)}
-                      placeholder="e.g. ARISTO-PP-2082-001 or ram.joshi"
+                      placeholder="Enter Passport Number or Username"
                       className="w-full px-3 py-2 text-xs font-mono border border-pink-200 rounded-lg focus:outline-none focus:border-pink-500"
                     />
                   </div>
@@ -993,40 +998,6 @@ export default function App() {
                     Sign In with Teacher Passport
                   </button>
                 </form>
-
-                {activeAssignedPassports.length > 0 && (
-                  <div className="border-t border-pink-100 pt-4 space-y-2">
-                    <div className="text-[11px] font-semibold text-pink-900">
-                      Quick-Fill Active Assigned Passport
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                      {activeAssignedPassports.map((pp) => {
-                        const holder = db.teachers.find(
-                          (t) => t.id === pp.assignedTeacherId,
-                        );
-                        return (
-                          <button
-                            key={pp.id}
-                            type="button"
-                            onClick={() => {
-                              setPassportLoginId(pp.passportNumber);
-                              setPassportLoginCode(pp.passcode);
-                              setPassportLoginError(null);
-                            }}
-                            className="text-left px-2.5 py-2 border border-pink-200 rounded-lg hover:bg-pink-50 transition-colors"
-                          >
-                            <div className="text-xs font-semibold text-slate-900 truncate">
-                              {holder?.name || pp.username}
-                            </div>
-                            <div className="text-[10px] font-mono text-pink-700 truncate">
-                              {pp.passportNumber}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             )
           ) : adminLockActive && adminSecurity ? (
@@ -1301,6 +1272,21 @@ export default function App() {
                   onUpdateMarks={(marks) => persistDb({ ...db, marks })}
                 />
               )}
+              {activePage === 'top-ten' && (
+                <TopTenStudentsView
+                  db={db}
+                  initialExamId={navContext.examId}
+                  initialClassId={navContext.classId}
+                  onViewGradeSheet={(stu, exId) =>
+                    navigate('grade-sheet', {
+                      examId: exId,
+                      classId: stu.classId,
+                      sectionId: stu.sectionId,
+                      studentId: stu.id,
+                    })
+                  }
+                />
+              )}
               {activePage === 'grade-sheet' && (
                 <GradeSheetView
                   db={db}
@@ -1338,7 +1324,10 @@ export default function App() {
               {activePage === 'settings' && (
                 <SettingsView
                   db={db}
-                  onSaveSettingsAndExams={(settings: SchoolSettings, exams: Exam[]) => {
+                  onSaveSettingsAndExams={async (
+                    settings: SchoolSettings,
+                    exams: Exam[],
+                  ) => {
                     const workingDaysByExamId = new Map<string, number>();
                     for (const ex of exams) {
                       workingDaysByExamId.set(ex.id, ex.workingDays);
@@ -1347,7 +1336,19 @@ export default function App() {
                       const nextDays = workingDaysByExamId.get(m.examId);
                       return nextDays ? { ...m, workingDays: nextDays } : m;
                     });
-                    persistDb({ ...db, settings, exams, marks });
+                    const academicYears = Array.from(
+                      new Set([
+                        ...(db.academicYears || []),
+                        settings.academicYear,
+                      ]),
+                    ).filter(Boolean);
+                    return persistDb({
+                      ...db,
+                      settings,
+                      exams,
+                      marks,
+                      academicYears,
+                    });
                   }}
                   onResetDemo={handleResetDemo}
                 />

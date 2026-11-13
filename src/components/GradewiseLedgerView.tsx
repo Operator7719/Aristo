@@ -276,6 +276,9 @@ export const GradewiseLedgerView: React.FC<GradewiseLedgerViewProps> = ({
                     </th>
                   );
                 })}
+                <th className="px-3 py-3 text-center border-l border-slate-200 whitespace-nowrap">
+                  Present Days
+                </th>
                 <th className="px-3 py-3 text-right border-l border-slate-200">
                   GPA
                 </th>
@@ -380,6 +383,9 @@ export const GradewiseLedgerView: React.FC<GradewiseLedgerViewProps> = ({
                       </td>
                     );
                   })}
+                  <td className="px-3 py-2.5 text-center font-mono tabular-nums text-slate-700 border-l border-slate-200 whitespace-nowrap">
+                    {r.markRecord ? `${r.presentDays}/${r.workingDays}` : '-'}
+                  </td>
                   <td className="px-3 py-2.5 text-right font-mono tabular-nums font-semibold text-indigo-700 border-l border-slate-200">
                     {r.hasAnyMarks ? r.gpa.toFixed(2) : '-'}
                   </td>
@@ -400,7 +406,7 @@ export const GradewiseLedgerView: React.FC<GradewiseLedgerViewProps> = ({
               {results.length === 0 && (
                 <tr>
                   <td
-                    colSpan={classSubjects.length + 5}
+                    colSpan={classSubjects.length + 6}
                     className="px-4 py-10 text-center text-slate-500 text-sm"
                   >
                     No student records found for this class and section.

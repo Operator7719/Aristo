@@ -200,7 +200,10 @@ export const MarkwiseLedgerView: React.FC<MarkwiseLedgerViewProps> = ({
             <strong className="text-slate-900">
               {selectedClass?.name} – Section {sectionName}
             </strong>{' '}
-            · {selectedExam?.name} ({selectedExam?.academicYear})
+            · {selectedExam?.name} ({selectedExam?.academicYear}) · Working Days:{' '}
+            <strong className="font-mono text-slate-900">
+              {selectedExam?.workingDays ?? 72}
+            </strong>
           </span>
           <span>Format per subject: TH | Final PR (with Conv.) | Total</span>
         </div>
@@ -229,6 +232,9 @@ export const MarkwiseLedgerView: React.FC<MarkwiseLedgerViewProps> = ({
                 <th className="px-3 py-3 text-right">Total</th>
                 <th className="px-3 py-3 text-right">%</th>
                 <th className="px-3 py-3 text-right">GPA</th>
+                <th className="px-3 py-3 text-center whitespace-nowrap">
+                  Present Days
+                </th>
                 <th className="px-3 py-3 text-center">Rank</th>
                 <th className="px-3 py-3 text-center">Result</th>
               </tr>
@@ -306,6 +312,9 @@ export const MarkwiseLedgerView: React.FC<MarkwiseLedgerViewProps> = ({
                   <td className="px-3 py-2.5 text-right font-mono tabular-nums font-semibold text-indigo-700">
                     {r.hasAnyMarks ? r.gpa.toFixed(2) : '-'}
                   </td>
+                  <td className="px-3 py-2.5 text-center font-mono tabular-nums text-slate-700 whitespace-nowrap">
+                    {r.markRecord ? `${r.presentDays}/${r.workingDays}` : '-'}
+                  </td>
                   <td className="px-3 py-2.5 text-center font-mono tabular-nums text-slate-800">
                     {r.rank ?? '-'}
                   </td>
@@ -325,7 +334,7 @@ export const MarkwiseLedgerView: React.FC<MarkwiseLedgerViewProps> = ({
               {filteredResults.length === 0 && (
                 <tr>
                   <td
-                    colSpan={classSubjects.length + 7}
+                    colSpan={classSubjects.length + 8}
                     className="px-4 py-10 text-center text-slate-500 text-sm"
                   >
                     No student records found for this class and section.

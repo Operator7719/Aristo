@@ -218,6 +218,7 @@ export type NavPage =
   | 'marks-entry'
   | 'markwise-ledger'
   | 'gradewise-ledger'
+  | 'top-ten'
   | 'grade-sheet'
   | 'excel-io'
   | 'settings'

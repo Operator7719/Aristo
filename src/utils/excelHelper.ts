@@ -261,6 +261,8 @@ export function exportMarkwiseLedgerExcel(
     row['Full Marks'] = r.grandTotalFullMarks;
     row['Percentage'] = Number(r.percentage.toFixed(2));
     row['GPA'] = Number(r.gpa.toFixed(2));
+    row['Working Days'] = r.workingDays;
+    row['Present Days'] = r.markRecord ? r.presentDays : '-';
     row['Rank'] = r.rank ?? '-';
     row['Result'] = r.hasAnyMarks ? (r.isPassed ? 'PASS' : 'NG') : 'Pending';
     return row;
@@ -308,6 +310,8 @@ export function exportGradewiseLedgerExcel(
       }
     }
 
+    row['Working Days'] = r.workingDays;
+    row['Present Days'] = r.markRecord ? r.presentDays : '-';
     row['GPA'] = Number(r.gpa.toFixed(2));
     row['Overall Grade'] = r.overallGrade;
     row['Remarks'] = r.overallRemarks;
@@ -393,5 +397,55 @@ export function exportTeacherPassportsExcel(rows: TeacherPassportReportRow[]) {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Teacher_Passports');
   XLSX.writeFile(wb, 'Teacher_Passports_Directory.xlsx');
+}
+
+export interface TopTenExportRow {
+  rank: number;
+  rollNo: number;
+  studentCode: string;
+  studentName: string;
+  sectionName: string;
+  totalObtained: number;
+  totalFullMarks: number;
+  percentage: number;
+  gpa: number;
+  overallGrade: string;
+  presentDays: number;
+  workingDays: number;
+  resultStatus: string;
+}
+
+export function exportTopTenExcel(
+  gpaRows: TopTenExportRow[],
+  percentageRows: TopTenExportRow[],
+  className: string,
+  sectionLabel: string,
+  exam: Exam,
+) {
+  const mapRows = (list: TopTenExportRow[]) =>
+    list.map((r) => ({
+      Rank: r.rank,
+      RollNo: r.rollNo,
+      StudentCode: r.studentCode,
+      StudentName: r.studentName,
+      Section: r.sectionName,
+      'Marks Obtained': r.totalObtained,
+      'Full Marks': r.totalFullMarks,
+      'Percentage (%)': Number(r.percentage.toFixed(2)),
+      GPA: Number(r.gpa.toFixed(2)),
+      Grade: r.overallGrade,
+      'Present Days': `${r.presentDays}/${r.workingDays}`,
+      Result: r.resultStatus,
+    }));
+
+  const wb = XLSX.utils.book_new();
+  const wsGpa = XLSX.utils.json_to_sheet(mapRows(gpaRows));
+  const wsPct = XLSX.utils.json_to_sheet(mapRows(percentageRows));
+  XLSX.utils.book_append_sheet(wb, wsGpa, 'Top_10_GPA_Wise');
+  XLSX.utils.book_append_sheet(wb, wsPct, 'Top_10_Percentage_Wise');
+
+  const safeClass = className.replace(/\s+/g, '_');
+  const safeSec = sectionLabel.replace(/\s+/g, '_');
+  XLSX.writeFile(wb, `Top_10_${safeClass}_${safeSec}_${exam.term}.xlsx`);
 }
 

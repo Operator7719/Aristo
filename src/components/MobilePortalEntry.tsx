@@ -90,10 +90,6 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
       ? Math.ceil((lockoutUntilMs - nowMs) / 1000)
       : 0;
 
-  const activeAssignedPassports = (db.teacher_passports || []).filter(
-    (p) => p.status === 'active' && Boolean(p.assignedTeacherId),
-  );
-
   const handleTeacherSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const normId = passportInput.trim().toLowerCase();
@@ -363,7 +359,7 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
                   autoComplete="username"
                   value={passportInput}
                   onChange={(e) => setPassportInput(e.target.value)}
-                  placeholder="e.g. ARISTO-PP-2082-001 or ram.joshi"
+                  placeholder="Enter Passport Number or Username"
                   className="w-full px-3.5 py-2.5 text-sm font-mono border border-pink-200 rounded-xl focus:outline-none focus:border-pink-500"
                 />
               </div>
@@ -400,40 +396,6 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
                 Sign In to Teacher Portal
               </button>
             </form>
-
-            {activeAssignedPassports.length > 0 && (
-              <div className="border-t border-pink-100 pt-3.5 space-y-2">
-                <div className="text-[11px] font-semibold text-pink-900">
-                  Quick-Fill Active Teacher Passport
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto">
-                  {activeAssignedPassports.map((pp) => {
-                    const holder = db.teachers.find(
-                      (t) => t.id === pp.assignedTeacherId,
-                    );
-                    return (
-                      <button
-                        key={pp.id}
-                        type="button"
-                        onClick={() => {
-                          setPassportInput(pp.passportNumber);
-                          setPasscodeInput(pp.passcode);
-                          setTeacherError(null);
-                        }}
-                        className="text-left px-3 py-2 border border-pink-200 rounded-lg hover:bg-pink-50 transition-colors"
-                      >
-                        <div className="text-xs font-semibold text-slate-900 truncate">
-                          {holder?.name || pp.username}
-                        </div>
-                        <div className="text-[10px] font-mono text-pink-700 truncate">
-                          {pp.passportNumber}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </div>
         )}
 
