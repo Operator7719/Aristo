@@ -72,6 +72,8 @@ import {
   OfflineIndicator,
   PWAInstallButton,
 } from './components/PWAInstallButton';
+import { useFirebase } from './context/FirebaseContext';
+import { subscribeFirestoreSchoolData } from './utils/firestoreSync';
 
 const STORAGE_KEY = 'aristo_school_db_v1';
 
@@ -163,6 +165,13 @@ const ADMIN_SESSION_KEY = 'aristo_admin_unlocked';
 const ADMIN_EMAIL_SESSION_KEY = 'aristo_admin_email';
 
 export default function App() {
+  const {
+    authReady,
+    firebaseUser,
+    loadFromFirestore,
+    syncToFirestore,
+    signOutFirebase,
+  } = useFirebase();
   const [db, setDb] = useState<SchoolDatabase | null>(null);
   const [userRole, setUserRole] = useState<UserRole>('admin');
   const [activeTeacherId, setActiveTeacherId] = useState<string>('tch-1');
@@ -283,6 +292,66 @@ export default function App() {
     return () => clearInterval(timer);
   }, [lockoutUntilMs]);
 
+  const dbLoaded = Boolean(db);
+
+  useEffect(() => {
+    if (!authReady || !firebaseUser || !firebaseUser.emailVerified || !db) {
+      return;
+    }
+    const targetAdminEmail = (
+      db.admin_security?.authorizedAdminEmail || DEFAULT_AUTHORIZED_ADMIN_EMAIL
+    )
+      .trim()
+      .toLowerCase();
+    if (firebaseUser.email?.trim().toLowerCase() !== targetAdminEmail) {
+      return;
+    }
+
+    let cancelled = false;
+    let unsub: (() => void) | undefined;
+
+    (async () => {
+      try {
+        const remotePatch = await loadFromFirestore();
+        if (cancelled) return;
+        if (remotePatch && Object.keys(remotePatch).length > 0) {
+          setDb((prev) => {
+            if (!prev) return prev;
+            const merged = { ...prev, ...remotePatch };
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+            } catch {
+              // ignore quota
+            }
+            return merged;
+          });
+        } else {
+          await syncToFirestore(db);
+        }
+        if (cancelled) return;
+        unsub = subscribeFirestoreSchoolData(firebaseUser, (patch) => {
+          setDb((prev) => {
+            if (!prev) return prev;
+            const next = { ...prev, ...patch };
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+            } catch {
+              // ignore quota
+            }
+            return next;
+          });
+        });
+      } catch (err) {
+        console.error('Firestore initialization sync error:', err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (unsub) unsub();
+    };
+  }, [authReady, firebaseUser, dbLoaded]);
+
   const persistDb = async (
     nextDb: SchoolDatabase,
   ): Promise<{ ok: boolean; mode: 'server' | 'local' }> => {
@@ -291,6 +360,21 @@ export default function App() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(nextDb));
     } catch {
       // ignore storage quota errors
+    }
+    const targetAdminEmail = (
+      nextDb.admin_security?.authorizedAdminEmail ||
+      DEFAULT_AUTHORIZED_ADMIN_EMAIL
+    )
+      .trim()
+      .toLowerCase();
+    if (
+      firebaseUser &&
+      firebaseUser.emailVerified &&
+      firebaseUser.email?.trim().toLowerCase() === targetAdminEmail
+    ) {
+      syncToFirestore(nextDb).catch((err) => {
+        console.error('Firestore background sync error:', err);
+      });
     }
     try {
       const res = await fetch('/api/state', {
@@ -609,6 +693,9 @@ export default function App() {
     setAdminUnlockError(null);
     setShowRecoveryMode(false);
     setMobileMenuOpen(false);
+    if (nextOption === 'select') {
+      signOutFirebase().catch(() => {});
+    }
   };
 
   if (!portalAuthenticated) {

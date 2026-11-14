@@ -986,9 +986,35 @@ async function startServer() {
       server: {
         middlewareMode: true,
         hmr: false,
+        ws: false,
       },
       appType: 'spa',
     });
+
+    // HMR and WebSockets are disabled in this single-port middleware setup;
+    // keep Vite's helper exports (updateStyle, createHotContext, ErrorOverlay)
+    // while preventing @vite/client from opening a failing WebSocket to port 24678.
+    app.get('/@vite/client', async (_req, res, next) => {
+      try {
+        const transformed = await vite.transformRequest('/@vite/client');
+        if (!transformed) {
+          next();
+          return;
+        }
+        const safeCode = transformed.code.replace(
+          /const transport = normalizeModuleRunnerTransport\(\(\(\) => \{[\s\S]*?\}\)\(\)\);/,
+          'const transport = normalizeModuleRunnerTransport({ connect() {}, disconnect() {}, send() {} });',
+        );
+        res
+          .status(200)
+          .setHeader('Content-Type', 'application/javascript; charset=utf-8')
+          .setHeader('Cache-Control', 'no-cache')
+          .send(safeCode);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.use(vite.middlewares);
   } else {
     app.use(express.static(distPath));

@@ -24,6 +24,7 @@ import {
   hashSecret,
   verifyTeacherPassportSecret,
 } from '../utils/passwordSecurity';
+import { useFirebase } from '../context/FirebaseContext';
 import { PWAInstallButton } from './PWAInstallButton';
 
 interface MobilePortalEntryProps {
@@ -74,6 +75,9 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
   const [recoveryAnswer, setRecoveryAnswer] = useState('');
   const [recoveryNewPwd, setRecoveryNewPwd] = useState('');
   const [recoveryConfirmPwd, setRecoveryConfirmPwd] = useState('');
+  const [googleBusy, setGoogleBusy] = useState(false);
+
+  const { signInAdminWithGoogle } = useFirebase();
 
   useEffect(() => {
     setSelectedOption(initialOption);
@@ -204,6 +208,24 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
     setFailedAttempts(0);
     setLockoutUntilMs(null);
     onAdminAuthenticated(enteredEmail, false);
+  };
+
+  const handleGoogleAdminSignIn = async () => {
+    if (lockoutRemainingSec > 0 || googleBusy) return;
+    setGoogleBusy(true);
+    setAdminError(null);
+    const res = await signInAdminWithGoogle(authorizedAdminEmail);
+    setGoogleBusy(false);
+    if (!res.ok || !res.email) {
+      setAdminError(
+        res.error ||
+          'Access Denied: Admin Panel is restricted to one authorized user only.',
+      );
+      return;
+    }
+    setFailedAttempts(0);
+    setLockoutUntilMs(null);
+    onAdminAuthenticated(res.email, false);
   };
 
   const handleRecoverySubmit = (e: React.FormEvent) => {
@@ -595,6 +617,22 @@ export const MobilePortalEntry: React.FC<MobilePortalEntryProps> = ({
                     </button>
                   </>
                 )}
+
+                <div className="pt-2 border-t border-slate-200">
+                  <button
+                    type="button"
+                    disabled={lockoutRemainingSec > 0 || googleBusy}
+                    onClick={handleGoogleAdminSignIn}
+                    className="w-full py-2.5 px-3.5 text-xs font-semibold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-indigo-700" />
+                    <span>
+                      {googleBusy
+                        ? 'Signing in with Google...'
+                        : 'Sign in with Google (Cloud Firestore)'}
+                    </span>
+                  </button>
+                </div>
               </form>
             ) : (
               <form onSubmit={handleRecoverySubmit} className="space-y-3.5">

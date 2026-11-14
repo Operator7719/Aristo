@@ -1,0 +1,526 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-Deny All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Global Security Primitives
+    function isValidId(id) {
+      return id is string &&
+        id.size() >= 1 &&
+        id.size() <= 128 &&
+        id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrappedAdmin() {
+      return isVerifiedUser() && request.auth.token.email == 'nirmaldahit@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin() || (
+        isVerifiedUser() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+
+    function isValidStr(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function hasOwnerCreateMeta(data) {
+      return isValidId(data.ownerUid) &&
+        data.ownerUid == request.auth.uid &&
+        isValidStr(data.ownerEmail, 3, 200) &&
+        data.ownerEmail == request.auth.token.email &&
+        data.createdAt is timestamp &&
+        data.createdAt == request.time &&
+        data.updatedAt is timestamp &&
+        data.updatedAt == request.time;
+    }
+
+    function hasOwnerUpdateMeta(data) {
+      return isValidId(data.ownerUid) &&
+        data.ownerUid == existing().ownerUid &&
+        isValidStr(data.ownerEmail, 3, 200) &&
+        data.ownerEmail == existing().ownerEmail &&
+        data.createdAt is timestamp &&
+        data.createdAt == existing().createdAt &&
+        data.updatedAt is timestamp &&
+        data.updatedAt == request.time;
+    }
+
+    // 3. Entity Validation Blueprints (Pure static checks — no existing() or diff())
+    function isValidAdminUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'role', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt']) &&
+        isValidId(data.uid) &&
+        isValidStr(data.email, 3, 200) &&
+        data.role == 'admin' &&
+        isValidId(data.ownerUid) &&
+        isValidStr(data.ownerEmail, 3, 200) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidSchoolSettings(data) {
+      return data.keys().hasAll([
+          'schoolName', 'address', 'estd', 'iemisCode', 'academicYear',
+          'dateOfIssue', 'status', 'requirePassBothComponents', 'signatories',
+          'gradingRules', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'schoolName', 'address', 'phone', 'email', 'estd', 'iemisCode',
+          'academicYear', 'dateOfIssue', 'status', 'requirePassBothComponents',
+          'signatories', 'gradingRules', 'examIssueDates', 'examWorkingDays',
+          'academicYears', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidStr(data.schoolName, 1, 200) &&
+        isValidStr(data.address, 0, 250) &&
+        (!('phone' in data) || isValidStr(data.phone, 0, 60)) &&
+        (!('email' in data) || isValidStr(data.email, 0, 200)) &&
+        isValidStr(data.estd, 0, 40) &&
+        isValidStr(data.iemisCode, 0, 40) &&
+        isValidStr(data.academicYear, 1, 40) &&
+        isValidStr(data.dateOfIssue, 0, 40) &&
+        data.status in ['active', 'inactive'] &&
+        data.requirePassBothComponents is bool &&
+        data.signatories is map &&
+        data.signatories.keys().hasOnly(['classTeacher', 'coordinator', 'principal']) &&
+        data.gradingRules is list &&
+        data.gradingRules.size() <= 20 &&
+        (data.gradingRules.size() == 0 || data.gradingRules[0] is map) &&
+        (!('examIssueDates' in data) || (data.examIssueDates is map && data.examIssueDates.keys().hasOnly(['first', 'second', 'third', 'annual']))) &&
+        (!('examWorkingDays' in data) || (data.examWorkingDays is map && data.examWorkingDays.keys().hasOnly(['first', 'second', 'third', 'annual']))) &&
+        (!('academicYears' in data) || (
+          data.academicYears is list &&
+          data.academicYears.size() <= 30 &&
+          (data.academicYears.size() == 0 || isValidStr(data.academicYears[0], 1, 40))
+        ));
+    }
+
+    function isValidAdminSecurity(data) {
+      return data.keys().hasAll([
+          'isConfigured', 'authorizedAdminEmail', 'adminUsername', 'adminDisplayName',
+          'passwordHash', 'passwordSalt', 'recoveryQuestion', 'recoveryAnswerHash',
+          'requireOnRoleSwitch', 'requireOnAppStart', 'maxFailedAttempts', 'requirements',
+          'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'isConfigured', 'authorizedAdminEmail', 'strictSingleUserOnly',
+          'adminUsername', 'adminDisplayName', 'passwordHash', 'passwordSalt',
+          'recoveryQuestion', 'recoveryAnswerHash', 'requireOnRoleSwitch',
+          'requireOnAppStart', 'maxFailedAttempts', 'requirements',
+          'updatedDate', 'updatedBy', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        data.isConfigured is bool &&
+        isValidStr(data.authorizedAdminEmail, 3, 200) &&
+        (!('strictSingleUserOnly' in data) || data.strictSingleUserOnly is bool) &&
+        isValidStr(data.adminUsername, 1, 80) &&
+        isValidStr(data.adminDisplayName, 0, 120) &&
+        isValidStr(data.passwordHash, 0, 256) &&
+        isValidStr(data.passwordSalt, 0, 128) &&
+        isValidStr(data.recoveryQuestion, 0, 300) &&
+        isValidStr(data.recoveryAnswerHash, 0, 256) &&
+        data.requireOnRoleSwitch is bool &&
+        data.requireOnAppStart is bool &&
+        data.maxFailedAttempts is number &&
+        data.maxFailedAttempts >= 1 &&
+        data.maxFailedAttempts <= 20 &&
+        data.requirements is map &&
+        data.requirements.keys().hasOnly([
+          'minLength', 'requireUppercase', 'requireLowercase', 'requireNumber', 'requireSpecialChar'
+        ]) &&
+        (!('updatedDate' in data) || isValidStr(data.updatedDate, 0, 40)) &&
+        (!('updatedBy' in data) || isValidStr(data.updatedBy, 0, 80));
+    }
+
+    function isValidSchoolClass(data) {
+      return data.keys().hasAll([
+          'id', 'name', 'gradeLevel', 'conversionTier', 'sections', 'status',
+          'order', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'name', 'gradeLevel', 'conversionTier', 'sections', 'status',
+          'order', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidStr(data.name, 1, 100) &&
+        data.gradeLevel is number &&
+        data.conversionTier in ['none', 'grade_4_8', 'grade_9_12'] &&
+        data.sections is list &&
+        data.sections.size() <= 20 &&
+        (data.sections.size() == 0 || data.sections[0] is map) &&
+        data.status in ['active', 'inactive'] &&
+        data.order is number;
+    }
+
+    function isValidSubject(data) {
+      return data.keys().hasAll([
+          'id', 'classId', 'code', 'name', 'category', 'fullMarksTheory',
+          'fullMarksPractical', 'passMarksTheory', 'passMarksPractical',
+          'creditHourTheory', 'creditHourPractical', 'conversionRule', 'status',
+          'displayOrder', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'classId', 'code', 'name', 'category', 'gradingMode',
+          'fullMarksTheory', 'fullMarksPractical', 'passMarksTheory',
+          'passMarksPractical', 'creditHourTheory', 'creditHourPractical',
+          'conversionRule', 'status', 'displayOrder', 'ownerUid', 'ownerEmail',
+          'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.classId) &&
+        isValidStr(data.code, 1, 60) &&
+        isValidStr(data.name, 1, 150) &&
+        data.category in ['compulsory', 'opt_1', 'opt_2'] &&
+        (!('gradingMode' in data) || data.gradingMode in ['academic', 'grade_only']) &&
+        data.fullMarksTheory is number &&
+        data.fullMarksPractical is number &&
+        data.passMarksTheory is number &&
+        data.passMarksPractical is number &&
+        data.creditHourTheory is number &&
+        data.creditHourPractical is number &&
+        data.conversionRule in ['inherit', 'none', 'grade_4_8', 'grade_9_12'] &&
+        data.status in ['active', 'inactive'] &&
+        data.displayOrder is number;
+    }
+
+    function isValidStudent(data) {
+      return data.keys().hasAll([
+          'id', 'studentCode', 'name', 'classId', 'sectionId', 'rollNo',
+          'academicYear', 'guardianName', 'contact', 'optionalSubjects',
+          'status', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'studentCode', 'name', 'classId', 'sectionId', 'rollNo',
+          'academicYear', 'dob', 'guardianName', 'contact', 'optionalSubjects',
+          'status', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidStr(data.studentCode, 1, 60) &&
+        isValidStr(data.name, 1, 150) &&
+        isValidId(data.classId) &&
+        isValidId(data.sectionId) &&
+        data.rollNo is number &&
+        isValidStr(data.academicYear, 1, 40) &&
+        (!('dob' in data) || isValidStr(data.dob, 0, 40)) &&
+        isValidStr(data.guardianName, 0, 150) &&
+        isValidStr(data.contact, 0, 60) &&
+        data.optionalSubjects is map &&
+        data.optionalSubjects.keys().hasOnly(['opt_1', 'opt_2']) &&
+        data.status in ['active', 'inactive'];
+    }
+
+    function isValidExam(data) {
+      return data.keys().hasAll([
+          'id', 'name', 'term', 'academicYear', 'workingDays', 'dateOfIssue',
+          'status', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'name', 'term', 'academicYear', 'workingDays', 'dateOfIssue',
+          'status', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidStr(data.name, 1, 150) &&
+        data.term in ['first', 'second', 'third', 'annual'] &&
+        isValidStr(data.academicYear, 1, 40) &&
+        data.workingDays is number &&
+        isValidStr(data.dateOfIssue, 0, 40) &&
+        data.status in ['active', 'inactive'];
+    }
+
+    function isValidMarkRecord(data) {
+      return data.keys().hasAll([
+          'id', 'examId', 'studentId', 'classId', 'sectionId', 'workingDays',
+          'presentDays', 'subjects', 'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'examId', 'studentId', 'classId', 'sectionId', 'workingDays',
+          'presentDays', 'subjects', 'nonAcademicGrades', 'teacherRemarks',
+          'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.examId) &&
+        isValidId(data.studentId) &&
+        isValidId(data.classId) &&
+        isValidId(data.sectionId) &&
+        data.workingDays is number &&
+        data.presentDays is number &&
+        data.subjects is map &&
+        data.subjects.size() <= 40 &&
+        (!('nonAcademicGrades' in data) || (data.nonAcademicGrades is map && data.nonAcademicGrades.size() <= 20)) &&
+        (!('teacherRemarks' in data) || isValidStr(data.teacherRemarks, 0, 500));
+    }
+
+    function isValidTeacher(data) {
+      return data.keys().hasAll([
+          'id', 'teacherCode', 'name', 'email', 'phone', 'qualification',
+          'specialization', 'status', 'joinedDate', 'ownerUid', 'ownerEmail',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'teacherCode', 'name', 'email', 'phone', 'qualification',
+          'specialization', 'status', 'joinedDate', 'ownerUid', 'ownerEmail',
+          'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidStr(data.teacherCode, 1, 60) &&
+        isValidStr(data.name, 1, 150) &&
+        isValidStr(data.email, 0, 200) &&
+        isValidStr(data.phone, 0, 60) &&
+        isValidStr(data.qualification, 0, 150) &&
+        isValidStr(data.specialization, 0, 150) &&
+        data.status in ['active', 'inactive'] &&
+        isValidStr(data.joinedDate, 0, 40);
+    }
+
+    function isValidTeacherAssignment(data) {
+      return data.keys().hasAll([
+          'id', 'academicYearId', 'teacherId', 'classId', 'sectionId', 'subjectId',
+          'assignmentType', 'createdBy', 'createdDate', 'ownerUid', 'ownerEmail',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'academicYearId', 'teacherId', 'classId', 'sectionId', 'subjectId',
+          'assignmentType', 'periodSlot', 'createdBy', 'createdDate', 'ownerUid',
+          'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidStr(data.academicYearId, 1, 40) &&
+        isValidId(data.teacherId) &&
+        isValidId(data.classId) &&
+        isValidId(data.sectionId) &&
+        isValidId(data.subjectId) &&
+        data.assignmentType in ['class_teacher', 'subject_teacher'] &&
+        (!('periodSlot' in data) || isValidStr(data.periodSlot, 0, 80)) &&
+        isValidStr(data.createdBy, 0, 80) &&
+        isValidStr(data.createdDate, 0, 40);
+    }
+
+    function isValidTeacherPassport(data) {
+      return data.keys().hasAll([
+          'id', 'passportNumber', 'passportTitle', 'username', 'passcode',
+          'issuedDate', 'expiryDate', 'status', 'createdBy', 'createdDate',
+          'ownerUid', 'ownerEmail', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'passportNumber', 'passportTitle', 'username', 'passcode',
+          'passwordHash', 'passwordSalt', 'passwordUpdatedDate', 'passwordUpdatedBy',
+          'assignedTeacherId', 'issuedDate', 'expiryDate', 'status', 'notes',
+          'createdBy', 'createdDate', 'assignedDate', 'ownerUid', 'ownerEmail',
+          'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidStr(data.passportNumber, 1, 80) &&
+        isValidStr(data.passportTitle, 1, 120) &&
+        isValidStr(data.username, 1, 80) &&
+        data.passcode == '' &&
+        (!('passwordHash' in data) || isValidStr(data.passwordHash, 0, 256)) &&
+        (!('passwordSalt' in data) || isValidStr(data.passwordSalt, 0, 128)) &&
+        (!('passwordUpdatedDate' in data) || isValidStr(data.passwordUpdatedDate, 0, 40)) &&
+        (!('passwordUpdatedBy' in data) || isValidStr(data.passwordUpdatedBy, 0, 80)) &&
+        (!('assignedTeacherId' in data) || data.assignedTeacherId == null || isValidId(data.assignedTeacherId)) &&
+        isValidStr(data.issuedDate, 0, 40) &&
+        isValidStr(data.expiryDate, 0, 40) &&
+        data.status in ['active', 'revoked', 'expired'] &&
+        (!('notes' in data) || isValidStr(data.notes, 0, 300)) &&
+        isValidStr(data.createdBy, 0, 80) &&
+        isValidStr(data.createdDate, 0, 40) &&
+        (!('assignedDate' in data) || isValidStr(data.assignedDate, 0, 40));
+    }
+
+    // 4. Collection Rules (Pillar 10 Ordering: Auth -> Static Validation -> Relational DB Checks)
+    match /admins/{uid} {
+      allow get: if isBootstrappedAdmin() && isValidId(uid) && request.auth.uid == uid;
+      allow list: if isBootstrappedAdmin() && resource.data.ownerEmail == request.auth.token.email;
+      allow create: if isBootstrappedAdmin() && isValidId(uid) && request.auth.uid == uid &&
+        isValidAdminUser(incoming()) && hasOwnerCreateMeta(incoming()) &&
+        incoming().uid == uid && incoming().email == request.auth.token.email;
+      allow update: if isBootstrappedAdmin() && isValidId(uid) && request.auth.uid == uid &&
+        isValidAdminUser(incoming()) && hasOwnerUpdateMeta(incoming()) &&
+        incoming().uid == existing().uid && incoming().email == existing().email &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['updatedAt']);
+      allow delete: if false;
+    }
+
+    match /school_settings/{settingId} {
+      allow get: if isVerifiedUser() && isValidId(settingId) && (resource == null || existing().ownerEmail == request.auth.token.email) && isAdmin();
+      allow list: if isBootstrappedAdmin() && resource.data.ownerEmail == request.auth.token.email;
+      allow create: if isVerifiedUser() && isValidId(settingId) && isValidSchoolSettings(incoming()) && hasOwnerCreateMeta(incoming()) && isAdmin();
+      allow update: if isVerifiedUser() && isValidId(settingId) && isValidSchoolSettings(incoming()) && hasOwnerUpdateMeta(incoming()) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'schoolName', 'address', 'phone', 'email', 'estd', 'iemisCode',
+          'academicYear', 'dateOfIssue', 'status', 'requirePassBothComponents',
+          'signatories', 'gradingRules', 'examIssueDates', 'examWorkingDays',
+          'academicYears', 'updatedAt'
+        ]) && isAdmin();
+      allow delete: if isVerifiedUser() && isValidId(settingId) && existing().ownerEmail == request.auth.token.email && isAdmin();
+    }
+
+    match /admin_security/{docId} {
+      allow get: if isVerifiedUser() && isValidId(docId) && (resource == null || existing().ownerEmail == request.auth.token.email) && isAdmin();
+      allow list: if isBootstrappedAdmin() && resource.data.ownerEmail == request.auth.token.email;
+      allow create: if isVerifiedUser() && isValidId(docId) && isValidAdminSecurity(incoming()) && hasOwnerCreateMeta(incoming()) && isAdmin();
+      allow update: if isVerifiedUser() && isValidId(docId) && isValidAdminSecurity(incoming()) && hasOwnerUpdateMeta(incoming()) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'isConfigured', 'authorizedAdminEmail', 'strictSingleUserOnly',
+          'adminUsername', 'adminDisplayName', 'passwordHash', 'passwordSalt',
+          'recoveryQuestion', 'recoveryAnswerHash', 'requireOnRoleSwitch',
+          'requireOnAppStart', 'maxFailedAttempts', 'requirements',
+          'updatedDate', 'updatedBy', 'updatedAt'
+        ]) && isAdmin();
+      allow delete: if isVerifiedUser() && isValidId(docId) && existing().ownerEmail == request.auth.token.email && isAdmin();
+    }
+
+    match /school_classes/{classId} {
+      allow get: if isVerifiedUser() && isValidId(classId) && (resource == null || existing().ownerEmail == request.auth.token.email) && isAdmin();
+      allow list: if isBootstrappedAdmin() && resource.data.ownerEmail == request.auth.token.email;
+      allow create: if isVerifiedUser() && isValidId(classId) && isValidSchoolClass(incoming()) && hasOwnerCreateMeta(incoming()) &&
+        incoming().id == classId && isAdmin();
+      allow update: if isVerifiedUser() && isValidId(classId) && isValidSchoolClass(incoming()) && hasOwnerUpdateMeta(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'gradeLevel', 'conversionTier', 'sections', 'status', 'order', 'updatedAt'
+        ]) && isAdmin();
+      allow delete: if isVerifiedUser() && isValidId(classId) && existing().ownerEmail == request.auth.token.email && isAdmin();
+    }
+
+    match /subjects/{subjectId} {
+      allow get: if isVerifiedUser() && isValidId(subjectId) && (resource == null || existing().ownerEmail == request.auth.token.email) && isAdmin();
+      allow list: if isBootstrappedAdmin() && resource.data.ownerEmail == request.auth.token.email;
+      allow create: if isVerifiedUser() && isValidId(subjectId) && isValidSubject(incoming()) && hasOwnerCreateMeta(incoming()) &&
+        incoming().id == subjectId && isAdmin() &&
+        (exists(/databases/$(database)/documents/school_classes/$(incoming().classId)) ||
+         existsAfter(/databases/$(database)/documents/school_classes/$(incoming().classId)));
+      allow update: if isVerifiedUser() && isValidId(subjectId) && isValidSubject(incoming()) && hasOwnerUpdateMeta(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().classId == existing().classId &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'code', 'name', 'category', 'gradingMode', 'fullMarksTheory',
+          'fullMarksPractical', 'passMarksTheory', 'passMarksPractical',
+          'creditHourTheory', 'creditHourPractical', 'conversionRule', 'status',
+          'displayOrder', 'updatedAt'
+        ]) && isAdmin();
+      allow delete: if isVerifiedUser() && isValidId(subjectId) && existing().ownerEmail == request.auth.token.email && isAdmin();
+    }
+
+    match /students/{studentId} {
+      allow get: if isVerifiedUser() && isValidId(studentId) && (resource == null || existing().ownerEmail == request.auth.token.email) && isAdmin();
+      allow list: if isBootstrappedAdmin() && resource.data.ownerEmail == request.auth.token.email;
+      allow create: if isVerifiedUser() && isValidId(studentId) && isValidStudent(incoming()) && hasOwnerCreateMeta(incoming()) &&
+        incoming().id == studentId && isAdmin() &&
+        (exists(/databases/$(database)/documents/school_classes/$(incoming().classId)) ||
+         existsAfter(/databases/$(database)/documents/school_classes/$(incoming().classId)));
+      allow update: if isVerifiedUser() && isValidId(studentId) && isValidStudent(incoming()) && hasOwnerUpdateMeta(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'studentCode', 'name', 'classId', 'sectionId', 'rollNo',
+          'academicYear', 'dob', 'guardianName', 'contact', 'optionalSubjects',
+          'status', 'updatedAt'
+        ]) && isAdmin();
+      allow delete: if isVerifiedUser() && isValidId(studentId) && existing().ownerEmail == request.auth.token.email && isAdmin();
+    }
+
+    match /exams/{examId} {
+      allow get: if isVerifiedUser() && isValidId(examId) && (resource == null || existing().ownerEmail == request.auth.token.email) && isAdmin();
+      allow list: if isBootstrappedAdmin() && resource.data.ownerEmail == request.auth.token.email;
+      allow create: if isVerifiedUser() && isValidId(examId) && isValidExam(incoming()) && hasOwnerCreateMeta(incoming()) &&
+        incoming().id == examId && isAdmin();
+      allow update: if isVerifiedUser() && isValidId(examId) && isValidExam(incoming()) && hasOwnerUpdateMeta(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'term', 'academicYear', 'workingDays', 'dateOfIssue', 'status', 'updatedAt'
+        ]) && isAdmin();
+      allow delete: if isVerifiedUser() && isValidId(examId) && existing().ownerEmail == request.auth.token.email && isAdmin();
+    }
+
+    match /marks/{markId} {
+      allow get: if isVerifiedUser() && isValidId(markId) && (resource == null || existing().ownerEmail == request.auth.token.email) && isAdmin();
+      allow list: if isBootstrappedAdmin() && resource.data.ownerEmail == request.auth.token.email;
+      allow create: if isVerifiedUser() && isValidId(markId) && isValidMarkRecord(incoming()) && hasOwnerCreateMeta(incoming()) &&
+        incoming().id == markId && isAdmin() &&
+        (exists(/databases/$(database)/documents/exams/$(incoming().examId)) ||
+         existsAfter(/databases/$(database)/documents/exams/$(incoming().examId))) &&
+        (exists(/databases/$(database)/documents/students/$(incoming().studentId)) ||
+         existsAfter(/databases/$(database)/documents/students/$(incoming().studentId)));
+      allow update: if isVerifiedUser() && isValidId(markId) && isValidMarkRecord(incoming()) && hasOwnerUpdateMeta(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().examId == existing().examId &&
+        incoming().studentId == existing().studentId &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'classId', 'sectionId', 'workingDays', 'presentDays', 'subjects',
+          'nonAcademicGrades', 'teacherRemarks', 'updatedAt'
+        ]) && isAdmin();
+      allow delete: if isVerifiedUser() && isValidId(markId) && existing().ownerEmail == request.auth.token.email && isAdmin();
+    }
+
+    match /teachers/{teacherId} {
+      allow get: if isVerifiedUser() && isValidId(teacherId) && (resource == null || existing().ownerEmail == request.auth.token.email) && isAdmin();
+      allow list: if isBootstrappedAdmin() && resource.data.ownerEmail == request.auth.token.email;
+      allow create: if isVerifiedUser() && isValidId(teacherId) && isValidTeacher(incoming()) && hasOwnerCreateMeta(incoming()) &&
+        incoming().id == teacherId && isAdmin();
+      allow update: if isVerifiedUser() && isValidId(teacherId) && isValidTeacher(incoming()) && hasOwnerUpdateMeta(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'teacherCode', 'name', 'email', 'phone', 'qualification',
+          'specialization', 'status', 'joinedDate', 'updatedAt'
+        ]) && isAdmin();
+      allow delete: if isVerifiedUser() && isValidId(teacherId) && existing().ownerEmail == request.auth.token.email && isAdmin();
+    }
+
+    match /teacher_subject_assignments/{assignmentId} {
+      allow get: if isVerifiedUser() && isValidId(assignmentId) && (resource == null || existing().ownerEmail == request.auth.token.email) && isAdmin();
+      allow list: if isBootstrappedAdmin() && resource.data.ownerEmail == request.auth.token.email;
+      allow create: if isVerifiedUser() && isValidId(assignmentId) && isValidTeacherAssignment(incoming()) && hasOwnerCreateMeta(incoming()) &&
+        incoming().id == assignmentId && isAdmin() &&
+        (exists(/databases/$(database)/documents/teachers/$(incoming().teacherId)) ||
+         existsAfter(/databases/$(database)/documents/teachers/$(incoming().teacherId))) &&
+        (exists(/databases/$(database)/documents/school_classes/$(incoming().classId)) ||
+         existsAfter(/databases/$(database)/documents/school_classes/$(incoming().classId))) &&
+        (exists(/databases/$(database)/documents/subjects/$(incoming().subjectId)) ||
+         existsAfter(/databases/$(database)/documents/subjects/$(incoming().subjectId)));
+      allow update: if isVerifiedUser() && isValidId(assignmentId) && isValidTeacherAssignment(incoming()) && hasOwnerUpdateMeta(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'academicYearId', 'teacherId', 'classId', 'sectionId', 'subjectId',
+          'assignmentType', 'periodSlot', 'createdBy', 'createdDate', 'updatedAt'
+        ]) && isAdmin();
+      allow delete: if isVerifiedUser() && isValidId(assignmentId) && existing().ownerEmail == request.auth.token.email && isAdmin();
+    }
+
+    match /teacher_passports/{passportId} {
+      allow get: if isVerifiedUser() && isValidId(passportId) && (resource == null || existing().ownerEmail == request.auth.token.email) && isAdmin();
+      allow list: if isBootstrappedAdmin() && resource.data.ownerEmail == request.auth.token.email;
+      allow create: if isVerifiedUser() && isValidId(passportId) && isValidTeacherPassport(incoming()) && hasOwnerCreateMeta(incoming()) &&
+        incoming().id == passportId && isAdmin();
+      allow update: if isVerifiedUser() && isValidId(passportId) && isValidTeacherPassport(incoming()) && hasOwnerUpdateMeta(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'passportNumber', 'passportTitle', 'username', 'passcode',
+          'passwordHash', 'passwordSalt', 'passwordUpdatedDate', 'passwordUpdatedBy',
+          'assignedTeacherId', 'issuedDate', 'expiryDate', 'status', 'notes',
+          'createdBy', 'createdDate', 'assignedDate', 'updatedAt'
+        ]) && isAdmin();
+      allow delete: if isVerifiedUser() && isValidId(passportId) && existing().ownerEmail == request.auth.token.email && isAdmin();
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AlertTriangle, Check, RotateCcw, Save } from 'lucide-react';
+import { AlertTriangle, Check, Cloud, RotateCcw, Save } from 'lucide-react';
 import {
   ActiveStatus,
   Exam,
@@ -8,6 +8,8 @@ import {
   SchoolDatabase,
   SchoolSettings,
 } from '../types';
+import { DEFAULT_AUTHORIZED_ADMIN_EMAIL } from '../data/seedData';
+import { useFirebase } from '../context/FirebaseContext';
 
 export interface SaveResult {
   ok: boolean;
@@ -87,6 +89,55 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [cloudBusy, setCloudBusy] = useState(false);
+  const [cloudFeedback, setCloudFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
+  const { firebaseUser, signInAdminWithGoogle, syncToFirestore } = useFirebase();
+  const expectedEmail = (
+    db.admin_security?.authorizedAdminEmail || DEFAULT_AUTHORIZED_ADMIN_EMAIL
+  )
+    .trim()
+    .toLowerCase();
+  const isCloudConnected =
+    Boolean(firebaseUser?.emailVerified) &&
+    firebaseUser?.email?.trim().toLowerCase() === expectedEmail;
+
+  const handleCloudSync = async () => {
+    setCloudBusy(true);
+    setCloudFeedback(null);
+    try {
+      if (!isCloudConnected) {
+        const res = await signInAdminWithGoogle(expectedEmail);
+        if (!res.ok) {
+          setCloudFeedback({
+            type: 'error',
+            message:
+              res.error || 'Could not authenticate Google Admin account.',
+          });
+          return;
+        }
+      }
+      await syncToFirestore(db);
+      setCloudFeedback({
+        type: 'success',
+        message: 'School database synced to Cloud Firestore successfully.',
+      });
+    } catch (error) {
+      const msg =
+        error instanceof Error ? error.message : 'Cloud Firestore sync failed.';
+      setCloudFeedback({
+        type: 'error',
+        message: msg.includes('Quota exceeded')
+          ? 'Firestore daily free tier quota exceeded. Quota resets tomorrow.'
+          : msg,
+      });
+    } finally {
+      setCloudBusy(false);
+    }
+  };
 
   useEffect(() => {
     setForm(buildInitialForm(db));
@@ -556,6 +607,49 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Cloud Firestore Database Sync */}
+      <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h3 className="text-base font-bold text-slate-900">
+              Firebase Cloud Firestore
+            </h3>
+            <p className="text-xs text-slate-500">
+              Back up and synchronize school settings, classes, subjects, students, exams, marks, and faculty records to Cloud Firestore.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={cloudBusy}
+            onClick={handleCloudSync}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-700 hover:bg-indigo-800 rounded-lg disabled:opacity-50 shrink-0"
+          >
+            <Cloud className="w-4 h-4" />
+            {cloudBusy
+              ? 'Syncing Firestore...'
+              : isCloudConnected
+                ? 'Sync Now to Cloud Firestore'
+                : 'Connect Google & Sync Firestore'}
+          </button>
+        </div>
+        {cloudFeedback && (
+          <div
+            className={`rounded-lg px-3.5 py-2.5 border text-xs font-medium flex items-center gap-2 ${
+              cloudFeedback.type === 'success'
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                : 'bg-rose-50 border-rose-200 text-rose-900'
+            }`}
+          >
+            {cloudFeedback.type === 'success' ? (
+              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            )}
+            <span>{cloudFeedback.message}</span>
+          </div>
+        )}
       </div>
 
       {/* Actions Footer */}

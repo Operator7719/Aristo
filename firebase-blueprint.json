@@ -1,0 +1,462 @@
+{
+  "entities": {
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Authorized administrator membership record.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 200
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin"]
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerEmail": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 200
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "email", "role", "ownerUid", "ownerEmail", "createdAt", "updatedAt"]
+    },
+    "SchoolSettingsDoc": {
+      "title": "SchoolSettingsDoc",
+      "description": "School configuration, grading rules, signatories, and academic years.",
+      "type": "object",
+      "properties": {
+        "schoolName": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "address": { "type": "string", "maxLength": 250 },
+        "phone": { "type": "string", "maxLength": 60 },
+        "email": { "type": "string", "maxLength": 200 },
+        "estd": { "type": "string", "maxLength": 40 },
+        "iemisCode": { "type": "string", "maxLength": 40 },
+        "academicYear": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "dateOfIssue": { "type": "string", "maxLength": 40 },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "requirePassBothComponents": { "type": "boolean" },
+        "signatories": { "type": "object" },
+        "gradingRules": { "type": "array" },
+        "examIssueDates": { "type": "object" },
+        "examWorkingDays": { "type": "object" },
+        "academicYears": { "type": "array" },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "schoolName",
+        "address",
+        "estd",
+        "iemisCode",
+        "academicYear",
+        "dateOfIssue",
+        "status",
+        "requirePassBothComponents",
+        "signatories",
+        "gradingRules",
+        "ownerUid",
+        "ownerEmail",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AdminSecurityDoc": {
+      "title": "AdminSecurityDoc",
+      "description": "Salted admin password hash, recovery config, and single-user access rules.",
+      "type": "object",
+      "properties": {
+        "isConfigured": { "type": "boolean" },
+        "authorizedAdminEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "strictSingleUserOnly": { "type": "boolean" },
+        "adminUsername": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "adminDisplayName": { "type": "string", "maxLength": 120 },
+        "passwordHash": { "type": "string", "maxLength": 256 },
+        "passwordSalt": { "type": "string", "maxLength": 128 },
+        "recoveryQuestion": { "type": "string", "maxLength": 300 },
+        "recoveryAnswerHash": { "type": "string", "maxLength": 256 },
+        "requireOnRoleSwitch": { "type": "boolean" },
+        "requireOnAppStart": { "type": "boolean" },
+        "maxFailedAttempts": { "type": "number" },
+        "requirements": { "type": "object" },
+        "updatedDate": { "type": "string", "maxLength": 40 },
+        "updatedBy": { "type": "string", "maxLength": 80 },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "isConfigured",
+        "authorizedAdminEmail",
+        "adminUsername",
+        "adminDisplayName",
+        "passwordHash",
+        "passwordSalt",
+        "recoveryQuestion",
+        "recoveryAnswerHash",
+        "requireOnRoleSwitch",
+        "requireOnAppStart",
+        "maxFailedAttempts",
+        "requirements",
+        "ownerUid",
+        "ownerEmail",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SchoolClassDoc": {
+      "title": "SchoolClassDoc",
+      "description": "Class level, conversion tier, and section configuration.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "gradeLevel": { "type": "number" },
+        "conversionTier": { "type": "string", "enum": ["none", "grade_4_8", "grade_9_12"] },
+        "sections": { "type": "array" },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "order": { "type": "number" },
+        "ownerUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "gradeLevel", "conversionTier", "sections", "status", "order", "ownerUid", "ownerEmail", "createdAt", "updatedAt"]
+    },
+    "SubjectDoc": {
+      "title": "SubjectDoc",
+      "description": "Class-specific subject with full/pass marks and credit hours.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "code": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "category": { "type": "string", "enum": ["compulsory", "opt_1", "opt_2"] },
+        "gradingMode": { "type": "string", "enum": ["academic", "grade_only"] },
+        "fullMarksTheory": { "type": "number" },
+        "fullMarksPractical": { "type": "number" },
+        "passMarksTheory": { "type": "number" },
+        "passMarksPractical": { "type": "number" },
+        "creditHourTheory": { "type": "number" },
+        "creditHourPractical": { "type": "number" },
+        "conversionRule": { "type": "string", "enum": ["inherit", "none", "grade_4_8", "grade_9_12"] },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "displayOrder": { "type": "number" },
+        "ownerUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "classId",
+        "code",
+        "name",
+        "category",
+        "fullMarksTheory",
+        "fullMarksPractical",
+        "passMarksTheory",
+        "passMarksPractical",
+        "creditHourTheory",
+        "creditHourPractical",
+        "conversionRule",
+        "status",
+        "displayOrder",
+        "ownerUid",
+        "ownerEmail",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "StudentDoc": {
+      "title": "StudentDoc",
+      "description": "Student enrollment and guardian contact record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentCode": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "classId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sectionId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "rollNo": { "type": "number" },
+        "academicYear": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "dob": { "type": "string", "maxLength": 40 },
+        "guardianName": { "type": "string", "maxLength": 150 },
+        "contact": { "type": "string", "maxLength": 60 },
+        "optionalSubjects": { "type": "object" },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "ownerUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "studentCode",
+        "name",
+        "classId",
+        "sectionId",
+        "rollNo",
+        "academicYear",
+        "guardianName",
+        "contact",
+        "optionalSubjects",
+        "status",
+        "ownerUid",
+        "ownerEmail",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ExamDoc": {
+      "title": "ExamDoc",
+      "description": "Terminal or annual examination record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "term": { "type": "string", "enum": ["first", "second", "third", "annual"] },
+        "academicYear": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "workingDays": { "type": "number" },
+        "dateOfIssue": { "type": "string", "maxLength": 40 },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "ownerUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "term", "academicYear", "workingDays", "dateOfIssue", "status", "ownerUid", "ownerEmail", "createdAt", "updatedAt"]
+    },
+    "MarkRecordDoc": {
+      "title": "MarkRecordDoc",
+      "description": "Student subject marks and attendance record for an exam.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "examId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sectionId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "workingDays": { "type": "number" },
+        "presentDays": { "type": "number" },
+        "subjects": { "type": "object" },
+        "nonAcademicGrades": { "type": "object" },
+        "teacherRemarks": { "type": "string", "maxLength": 500 },
+        "ownerUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "examId",
+        "studentId",
+        "classId",
+        "sectionId",
+        "workingDays",
+        "presentDays",
+        "subjects",
+        "ownerUid",
+        "ownerEmail",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "TeacherDoc": {
+      "title": "TeacherDoc",
+      "description": "Faculty profile with PII restricted to Admin.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherCode": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "email": { "type": "string", "maxLength": 200 },
+        "phone": { "type": "string", "maxLength": 60 },
+        "qualification": { "type": "string", "maxLength": 150 },
+        "specialization": { "type": "string", "maxLength": 150 },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "joinedDate": { "type": "string", "maxLength": 40 },
+        "ownerUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "teacherCode",
+        "name",
+        "email",
+        "phone",
+        "qualification",
+        "specialization",
+        "status",
+        "joinedDate",
+        "ownerUid",
+        "ownerEmail",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "TeacherAssignmentDoc": {
+      "title": "TeacherAssignmentDoc",
+      "description": "Subject teacher assignment for class, section, and academic year.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "academicYearId": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "teacherId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sectionId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "subjectId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "assignmentType": { "type": "string", "enum": ["class_teacher", "subject_teacher"] },
+        "periodSlot": { "type": "string", "maxLength": 80 },
+        "createdBy": { "type": "string", "maxLength": 80 },
+        "createdDate": { "type": "string", "maxLength": 40 },
+        "ownerUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "academicYearId",
+        "teacherId",
+        "classId",
+        "sectionId",
+        "subjectId",
+        "assignmentType",
+        "createdBy",
+        "createdDate",
+        "ownerUid",
+        "ownerEmail",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "TeacherPassportDoc": {
+      "title": "TeacherPassportDoc",
+      "description": "Hashed teacher login credential and assignment metadata.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "passportNumber": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "passportTitle": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "username": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "passcode": { "type": "string", "maxLength": 128 },
+        "passwordHash": { "type": "string", "maxLength": 256 },
+        "passwordSalt": { "type": "string", "maxLength": 128 },
+        "passwordUpdatedDate": { "type": "string", "maxLength": 40 },
+        "passwordUpdatedBy": { "type": "string", "maxLength": 80 },
+        "assignedTeacherId": { "type": "string", "maxLength": 128 },
+        "issuedDate": { "type": "string", "maxLength": 40 },
+        "expiryDate": { "type": "string", "maxLength": 40 },
+        "status": { "type": "string", "enum": ["active", "revoked", "expired"] },
+        "notes": { "type": "string", "maxLength": 300 },
+        "createdBy": { "type": "string", "maxLength": 80 },
+        "createdDate": { "type": "string", "maxLength": 40 },
+        "assignedDate": { "type": "string", "maxLength": 40 },
+        "ownerUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "passportNumber",
+        "passportTitle",
+        "username",
+        "passcode",
+        "issuedDate",
+        "expiryDate",
+        "status",
+        "createdBy",
+        "createdDate",
+        "ownerUid",
+        "ownerEmail",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/admins/{uid}": {
+      "schema": { "$ref": "#/entities/AdminUser" },
+      "description": "Single authorized administrator registry document."
+    },
+    "/school_settings/{settingId}": {
+      "schema": { "$ref": "#/entities/SchoolSettingsDoc" },
+      "description": "School profile, signatories, grading rules, and academic year list."
+    },
+    "/admin_security/{docId}": {
+      "schema": { "$ref": "#/entities/AdminSecurityDoc" },
+      "description": "Salted admin password hash and security policy configuration."
+    },
+    "/school_classes/{classId}": {
+      "schema": { "$ref": "#/entities/SchoolClassDoc" },
+      "description": "Class levels and section lists."
+    },
+    "/subjects/{subjectId}": {
+      "schema": { "$ref": "#/entities/SubjectDoc" },
+      "description": "Subjects mapped to each school class."
+    },
+    "/students/{studentId}": {
+      "schema": { "$ref": "#/entities/StudentDoc" },
+      "description": "Student roster and optional subject selections."
+    },
+    "/exams/{examId}": {
+      "schema": { "$ref": "#/entities/ExamDoc" },
+      "description": "Terminal and annual exams."
+    },
+    "/marks/{markId}": {
+      "schema": { "$ref": "#/entities/MarkRecordDoc" },
+      "description": "Exam marks and attendance records."
+    },
+    "/teachers/{teacherId}": {
+      "schema": { "$ref": "#/entities/TeacherDoc" },
+      "description": "Faculty directory records."
+    },
+    "/teacher_subject_assignments/{assignmentId}": {
+      "schema": { "$ref": "#/entities/TeacherAssignmentDoc" },
+      "description": "Subject teacher assignments."
+    },
+    "/teacher_passports/{passportId}": {
+      "schema": { "$ref": "#/entities/TeacherPassportDoc" },
+      "description": "Hashed teacher login credentials."
+    }
+  }
+}
